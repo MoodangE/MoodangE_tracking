@@ -25,11 +25,12 @@ python tracking.py --source 0 # webcam
 
 </details>
 <details>
-<summary>Reference</summary>
+<summary>Implements Reference</summary>
 
-1. https://github.com/tensorturtle/classy-sort-yolov5
++ [tensorturtle/classy-sort-yolov5](https://github.com/tensorturtle/classy-sort-yolov5) See How to Configure Two Repositories
++ [ultralytics/YOLOv5]( https://github.com/ultralytics/yolov5) With No Modifications
++ [abewley/SORT](https://github.com/abewley/sort) With minor Modifications
 
-> https://github.com/ultralytics/yolov5 와 https://github.com/abewley/sort 가 합쳐져 있는 형태
 </details>
 
 
