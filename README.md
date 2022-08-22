@@ -18,13 +18,9 @@ downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) a
 the latest YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
 
 ```bash
-python tracking.py --source 0  # webcam
-                          img.jpg  # image
-                          vid.mp4  # video
-                          path/  # directory
-                          'path/*.jpg'  # glob
-                          'https://youtu.be/Zgi9g1ksQHc'  # YouTube
-                          'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
+python tracking.py --source 0 # webcam
+                            vid.mp4 --view-img # video
+                            img.jpg # image
 ```
 
 </details>
