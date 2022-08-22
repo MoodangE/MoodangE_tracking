@@ -1,26 +1,62 @@
 # MoodangE_ver1
-## 참고 git repository
-   1. https://github.com/tensorturtle/classy-sort-yolov5
 
-   > https://github.com/ultralytics/yolov5 와 https://github.com/abewley/sort 가 합쳐져 있는 형태
-### 오류 & 해결책
+<details open>
+<summary>Install</summary>
+
+```bash
+git clone https://github.com/MoodangE/MoodangE_ver1  # clone
+cd MoodangE_ver1
+pip install -r requirements.txt  # install
+```
+
+</details>
+<details open>
+<summary>Inference with tracking.py</summary>
+
+`tracking.py` runs inference on a variety of sources,
+downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from
+the latest YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
+
+```bash
+python tracking.py --source 0  # webcam
+                          img.jpg  # image
+                          vid.mp4  # video
+                          path/  # directory
+                          'path/*.jpg'  # glob
+                          'https://youtu.be/Zgi9g1ksQHc'  # YouTube
+                          'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP stream
+```
+
+</details>
+<details>
+<summary>Reference</summary>
+
+1. https://github.com/tensorturtle/classy-sort-yolov5
+
+> https://github.com/ultralytics/yolov5 와 https://github.com/abewley/sort 가 합쳐져 있는 형태
+</details>
+
+
+<details>
+<summary>Error & Solution</summary>
 
 1. PyCharm으로 구동해볼 때 classy-sort-yolov5의 ****classy_track****의 58번째 줄의
    **from sort import ***에서 오류가 발생
 
-    **해결책 >** PyCharm 프로젝트 안에서 두개의 프로젝트를 **일반 폴더**가 아닌 **소스** 형태로 바꾸면 정상으로 import 됨
+   **해결책 >** PyCharm 프로젝트 안에서 두개의 프로젝트를 **일반 폴더**가 아닌 **소스** 형태로 바꾸면 정상으로 import 됨
 
-    ![Untitled](asset/error1_1.png)
+   ![Untitled](asset/error1_1.png)
 
-    **↓** 정상 import 된 화면
+   **↓** 정상 import 된 화면
 
-    ![Untitled](asset/error1_2.png)
-    ####
+   ![Untitled](asset/error1_2.png)
+   ####
 2. classy-sort-yolov5/yolov5/weights/download_weights.sh의 파일이 정상 작동하지 않아 yolov5s.pt 파일을 정상적으로 다운로드 하지 못함.
 
-    **해결책 >** [https://github.com/ultralytics/yolov5/releases/download/v3.1/yolov5s.pt](https://github.com/ultralytics/yolov5/releases/download/v3.1/yolov5s.pt)
-       를 통해 yolov5s.pt 파일을 다운로드 한뒤에 classy-sort-yolov5/yolov5/weights에 붙여넣음
-    ####
+   **
+   해결책 >** [https://github.com/ultralytics/yolov5/releases/download/v3.1/yolov5s.pt](https://github.com/ultralytics/yolov5/releases/download/v3.1/yolov5s.pt)
+   를 통해 yolov5s.pt 파일을 다운로드 한뒤에 classy-sort-yolov5/yolov5/weights에 붙여넣음
+   ####
 
 3. (python classy_track.py --source 동영상 경로 --view-img) or  (python classy_track.py —source 0)를 실행시 발생하는 오류 (
    —view—img: 영상, 0: 웹캠)
@@ -38,5 +74,5 @@
    **↓** 정상 작동하며 Multiple Object Tracking (MOT)가 되는것을 볼 수 있음
 
    ![Untitled](asset/error3_3.png)
-            
-       
+
+</details>
