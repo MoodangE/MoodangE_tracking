@@ -17,10 +17,13 @@ pip install -r requirements.txt  # install
 downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from
 the latest YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
 
+- Using webacam
 ```bash
 python tracking.py --source 0 # webcam
-                            vid.mp4 --view-img # video
-                            img.jpg # image
+```
+- Using Video file
+```bash
+python tracking.py --source "path/vid.mp4" --view-img # video
 ```
 
 </details>
