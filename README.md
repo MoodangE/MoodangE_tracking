@@ -14,23 +14,38 @@ pip install -r requirements.txt  # install
 <summary>Inference with tracking.py</summary>
 
 `tracking.py` runs inference on a variety of sources,
-downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from
-the latest YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
+downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from the latest
+YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
 
 - Using webacam
+
 ```bash
 python tracking.py --source 0 # webcam
 ```
+
 - Using Video file
+
 ```bash
 python tracking.py --source "path/vid.mp4" --view-img # video
 ```
 
 </details>
+
+<details open>
+<summary>Train</summary>
+
+```bash
+cd yolov5
+python train.py --img 640 --batch 4 --epochs 5 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
+```
+
+</details>
+
 <details>
 <summary>Implements Reference</summary>
 
-+ [tensorturtle/classy-sort-yolov5](https://github.com/tensorturtle/classy-sort-yolov5) See How to Configure Two Repositories
++ [tensorturtle/classy-sort-yolov5](https://github.com/tensorturtle/classy-sort-yolov5) See How to Configure Two
+  Repositories
 + [ultralytics/YOLOv5]( https://github.com/ultralytics/yolov5) With No Modifications
 + [abewley/SORT](https://github.com/abewley/sort) With minor Modifications
 
@@ -66,8 +81,8 @@ python tracking.py --source "path/vid.mp4" --view-img # video
    **AttributeError: 'Upsample' object has no attribute 'recompute_scale_factor’라는 오류가 발생함.**
 
    **해결책 >** 출처 : https://github.com/ultralytics/yolov5/issues/6948
-   ~\site-packages\torch\nn\modules\upsampling.py에서 154줄의 `recompute_scale_factor=self.recompute_scale_factor` 를
-   주석처리하면 정상 작동
+   ~\site-packages\torch\nn\modules\upsampling.py에서 154줄의 `recompute_scale_factor=self.recompute_scale_factor` 를 주석처리하면
+   정상 작동
 
    ![Untitled](asset/error3_2.png)
 
