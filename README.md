@@ -29,6 +29,11 @@ python tracking.py --source 0 # webcam
 python tracking.py --source "path/vid.mp4" --view-img # video
 ```
 
+- Using 'custom weights' 
+```bash
+python tracking.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
+```
+
 </details>
 
 <details open>
