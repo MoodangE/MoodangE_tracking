@@ -44,7 +44,7 @@ def check_wandb_dataset(data_file):
     is_trainset_wandb_artifact = False
     is_valset_wandb_artifact = False
     if isinstance(data_file, dict):
-        # In that case another dataset manager has already processed it and we don't have to
+        # In that case another customDataset manager has already processed it and we don't have to
         return data_file
     if check_file(data_file) and data_file.endswith('.yaml'):
         with open(data_file, errors='ignore') as f:
@@ -123,7 +123,7 @@ class WandbLogger():
     def __init__(self, opt, run_id=None, job_type='Training'):
         """
         - Initialize WandbLogger instance
-        - Upload dataset if opt.upload_dataset is True
+        - Upload customDataset if opt.upload_dataset is True
         - Setup training processes if job_type is 'Training'
 
         arguments:
@@ -174,7 +174,7 @@ class WandbLogger():
                         self.wandb_artifact_data_dict = self.check_and_upload_dataset(opt)
 
                 if isinstance(opt.data, dict):
-                    # This means another dataset manager has already processed the dataset info (e.g. ClearML)
+                    # This means another customDataset manager has already processed the customDataset info (e.g. ClearML)
                     # and they will have stored the already processed dict in opt.data
                     self.data_dict = opt.data
                 elif opt.resume:
@@ -197,15 +197,15 @@ class WandbLogger():
 
     def check_and_upload_dataset(self, opt):
         """
-        Check if the dataset format is compatible and upload it as W&B artifact
+        Check if the customDataset format is compatible and upload it as W&B artifact
 
         arguments:
         opt (namespace)-- Commandline arguments for current run
 
         returns:
-        Updated dataset info dictionary where local dataset paths are replaced by WAND_ARFACT_PREFIX links.
+        Updated customDataset info dictionary where local customDataset paths are replaced by WAND_ARFACT_PREFIX links.
         """
-        assert wandb, 'Install wandb to upload dataset'
+        assert wandb, 'Install wandb to upload customDataset'
         config_path = self.log_dataset_artifact(opt.data, opt.single_cls,
                                                 'YOLOv5' if opt.project == 'runs/train' else Path(opt.project).stem)
         with open(config_path, errors='ignore') as f:
@@ -215,8 +215,8 @@ class WandbLogger():
     def setup_training(self, opt):
         """
         Setup the necessary processes for training YOLO models:
-          - Attempt to download model checkpoint and dataset artifacts if opt.resume stats with WANDB_ARTIFACT_PREFIX
-          - Update data_dict, to contain info of previous run if resumed and the paths of dataset artifact if downloaded
+          - Attempt to download model checkpoint and customDataset artifacts if opt.resume stats with WANDB_ARTIFACT_PREFIX
+          - Update data_dict, to contain info of previous run if resumed and the paths of customDataset artifact if downloaded
           - Setup log_dict, initialize bbox_interval
 
         arguments:
@@ -269,17 +269,17 @@ class WandbLogger():
         download the model checkpoint artifact if the path starts with WANDB_ARTIFACT_PREFIX
 
         arguments:
-        path -- path of the dataset to be used for training
+        path -- path of the customDataset to be used for training
         alias (str)-- alias of the artifact to be download/used for training
 
         returns:
-        (str, wandb.Artifact) -- path of the downladed dataset and it's corresponding artifact object if dataset
+        (str, wandb.Artifact) -- path of the downladed customDataset and it's corresponding artifact object if customDataset
         is found otherwise returns (None, None)
         """
         if isinstance(path, str) and path.startswith(WANDB_ARTIFACT_PREFIX):
             artifact_path = Path(remove_prefix(path, WANDB_ARTIFACT_PREFIX) + ":" + alias)
             dataset_artifact = wandb.use_artifact(artifact_path.as_posix().replace("\\", "/"))
-            assert dataset_artifact is not None, "'Error: W&B dataset artifact doesn\'t exist'"
+            assert dataset_artifact is not None, "'Error: W&B customDataset artifact doesn\'t exist'"
             datadir = dataset_artifact.download()
             return datadir, dataset_artifact
         return None, None
@@ -329,10 +329,10 @@ class WandbLogger():
 
     def log_dataset_artifact(self, data_file, single_cls, project, overwrite_config=False):
         """
-        Log the dataset as W&B artifact and return the new data file with W&B links
+        Log the customDataset as W&B artifact and return the new data file with W&B links
 
         arguments:
-        data_file (str) -- the .yaml file with information about the dataset like - path, classes etc.
+        data_file (str) -- the .yaml file with information about the customDataset like - path, classes etc.
         single_class (boolean)  -- train multi-class data as single-class
         project (str) -- project name. Used to construct the artifact path
         overwrite_config (boolean) -- overwrites the data.yaml file if set to true otherwise creates a new
@@ -370,12 +370,12 @@ class WandbLogger():
             data.pop('path', None)
             with open(path, 'w') as f:
                 yaml.safe_dump(data, f)
-                LOGGER.info(f"Created dataset config file {path}")
+                LOGGER.info(f"Created customDataset config file {path}")
 
         if self.job_type == 'Training':  # builds correct artifact pipeline graph
             if not log_val_only:
                 self.wandb_run.log_artifact(
-                    self.train_artifact)  # calling use_artifact downloads the dataset. NOT NEEDED!
+                    self.train_artifact)  # calling use_artifact downloads the customDataset. NOT NEEDED!
             self.wandb_run.use_artifact(self.val_artifact)
             self.val_artifact.wait()
             self.val_table = self.val_artifact.get('val')
@@ -387,28 +387,28 @@ class WandbLogger():
 
     def map_val_table_path(self):
         """
-        Map the validation dataset Table like name of file -> it's id in the W&B Table.
+        Map the validation customDataset Table like name of file -> it's id in the W&B Table.
         Useful for - referencing artifacts for evaluation.
         """
         self.val_table_path_map = {}
-        LOGGER.info("Mapping dataset")
+        LOGGER.info("Mapping customDataset")
         for i, data in enumerate(tqdm(self.val_table.data)):
             self.val_table_path_map[data[3]] = data[0]
 
-    def create_dataset_table(self, dataset: LoadImagesAndLabels, class_to_id: Dict[int, str], name: str = 'dataset'):
+    def create_dataset_table(self, dataset: LoadImagesAndLabels, class_to_id: Dict[int, str], name: str = 'customDataset'):
         """
-        Create and return W&B artifact containing W&B Table of the dataset.
+        Create and return W&B artifact containing W&B Table of the customDataset.
 
         arguments:
-        dataset -- instance of LoadImagesAndLabels class used to iterate over the data to build Table
+        customDataset -- instance of LoadImagesAndLabels class used to iterate over the data to build Table
         class_to_id -- hash map that maps class ids to labels
         name -- name of the artifact
 
         returns:
-        dataset artifact to be logged or used
+        customDataset artifact to be logged or used
         """
         # TODO: Explore multiprocessing to slpit this loop parallely| This is essential for speeding up the the logging
-        artifact = wandb.Artifact(name=name, type="dataset")
+        artifact = wandb.Artifact(name=name, type="customDataset")
         img_files = tqdm([dataset.path]) if isinstance(dataset.path, str) and Path(dataset.path).is_dir() else None
         img_files = tqdm(dataset.im_files) if not img_files else img_files
         for img_file in img_files:
@@ -443,7 +443,7 @@ class WandbLogger():
 
     def log_training_progress(self, predn, path, names):
         """
-        Build evaluation Table. Uses reference from validation dataset table.
+        Build evaluation Table. Uses reference from validation customDataset table.
 
         arguments:
         predn (list): list of predictions in the native space in the format - [xmin, ymin, xmax, ymax, confidence, class]
@@ -486,14 +486,14 @@ class WandbLogger():
 
     def val_one_image(self, pred, predn, path, names, im):
         """
-        Log validation data for one image. updates the result Table if validation dataset is uploaded and log bbox media panel
+        Log validation data for one image. updates the result Table if validation customDataset is uploaded and log bbox media panel
 
         arguments:
         pred (list): list of scaled predictions in the format - [xmin, ymin, xmax, ymax, confidence, class]
         predn (list): list of predictions in the native space - [xmin, ymin, xmax, ymax, confidence, class]
         path (str): local path of the current evaluation image
         """
-        if self.val_table and self.result_table:  # Log Table if Val dataset is uploaded as artifact
+        if self.val_table and self.result_table:  # Log Table if Val customDataset is uploaded as artifact
             self.log_training_progress(predn, path, names)
 
         if len(self.bbox_media_panel_images) < self.max_imgs_to_log and self.current_epoch > 0:

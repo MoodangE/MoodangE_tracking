@@ -1,6 +1,6 @@
 #!/bin/bash
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
-# Download COCO 2017 dataset http://cocodataset.org
+# Download COCO 2017 customDataset http://cocodataset.org
 # Example usage: bash data/scripts/get_coco.sh
 # parent
 # ├── yolov5

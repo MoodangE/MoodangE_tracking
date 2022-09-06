@@ -81,7 +81,7 @@ def run(
         out='inference/output',
         weights='yolov5/yolov5s.pt',  # model.pt path(s)
         source='yolov5/data/images',  # file/dir/URL/glob, 0 for webcam
-        data='yolov5/models/yolov5s.yaml',  # dataset.yaml path
+        data='yolov5/models/yolov5s.yaml',  # customDataset.yaml path
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
@@ -290,7 +290,7 @@ def parse_opt():
     # YOLOv5 params
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5/yolov5s.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default='yolov5/data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml', help='(optional) dataset.yaml path')
+    parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml', help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')

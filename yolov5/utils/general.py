@@ -454,7 +454,7 @@ def check_file(file, suffix=''):
             assert Path(file).exists() and Path(file).stat().st_size > 0, f'File download failed: {url}'  # check
         return file
     elif file.startswith('clearml://'):  # ClearML Dataset ID
-        assert 'clearml' in sys.modules, "ClearML is not installed, so cannot use ClearML dataset. Try running 'pip install clearml'."
+        assert 'clearml' in sys.modules, "ClearML is not installed, so cannot use ClearML customDataset. Try running 'pip install clearml'."
         return file
     else:  # search
         files = []
@@ -476,7 +476,7 @@ def check_font(font=FONT, progress=False):
 
 
 def check_dataset(data, autodownload=True):
-    # Download, check and/or unzip dataset if not found locally
+    # Download, check and/or unzip customDataset if not found locally
 
     # Download (optional)
     extract_dir = ''

@@ -133,7 +133,7 @@ clearml-data sync --project YOLOv5 --name coco128 --folder .
 The command `clearml-data sync` is actually a shorthand command. You could also run these commands one after the other:
 ```bash
 # Optionally add --parent <parent_dataset_id> if you want to base
-# this version on another dataset version, so no duplicate files are uploaded!
+# this version on another customDataset version, so no duplicate files are uploaded!
 clearml-data create --name coco128 --project YOLOv5
 clearml-data add --files .
 clearml-data close
@@ -207,7 +207,7 @@ if RANK in {-1, 0}:
     loggers = Loggers(save_dir, weights, opt, hyp, LOGGER)  # loggers instance
     if loggers.clearml:
         loggers.clearml.task.execute_remotely(queue='my_queue')  # <------ ADD THIS LINE
-        # Data_dict is either None is user did not choose for ClearML dataset or is filled in by ClearML
+        # Data_dict is either None is user did not choose for ClearML customDataset or is filled in by ClearML
         data_dict = loggers.clearml.data_dict
 # ...
 ```

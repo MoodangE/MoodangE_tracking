@@ -1,6 +1,6 @@
 # YOLOv5 🚀 by Ultralytics, GPL-3.0 license
 """
-Train a YOLOv5 classifier model on a classification dataset
+Train a YOLOv5 classifier model on a classification customDataset
 
 Usage - Single-GPU training:
     $ python classify/train.py --model yolov5s-cls.pt --data imagenette160 --epochs 5 --img 128
@@ -165,9 +165,9 @@ def train(opt, device):
     LOGGER.info(f'Image sizes {imgsz} train, {imgsz} test\n'
                 f'Using {nw * WORLD_SIZE} dataloader workers\n'
                 f"Logging results to {colorstr('bold', save_dir)}\n"
-                f'Starting {opt.model} training on {data} dataset with {nc} classes for {epochs} epochs...\n\n'
+                f'Starting {opt.model} training on {data} customDataset with {nc} classes for {epochs} epochs...\n\n'
                 f"{'Epoch':>10}{'GPU_mem':>10}{'train_loss':>12}{f'{val}_loss':>12}{'top1_acc':>12}{'top5_acc':>12}")
-    for epoch in range(epochs):  # loop over the dataset multiple times
+    for epoch in range(epochs):  # loop over the customDataset multiple times
         tloss, vloss, fitness = 0.0, 0.0, 0.0  # train loss, val loss, fitness
         model.train()
         if RANK != -1:

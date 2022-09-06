@@ -341,7 +341,7 @@ def plot_val_study(file='', dir='', x=None):  # from utils.plots import *; plot_
 
 @try_except  # known issue https://github.com/ultralytics/yolov5/issues/5395
 def plot_labels(labels, names=(), save_dir=Path('')):
-    # plot dataset labels
+    # plot customDataset labels
     LOGGER.info(f"Plotting labels to {save_dir / 'labels.jpg'}... ")
     c, b = labels[:, 0], labels[:, 1:].transpose()  # classes, boxes
     nc = int(c.max() + 1)  # number of classes
