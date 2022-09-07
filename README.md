@@ -5,7 +5,7 @@
 
 ```bash
 git clone https://github.com/MoodangE/MoodangE_tracking  # clone
-cd MoodangE_ver1
+cd MoodangE_tracking
 pip install -r requirements.txt  # install
 ```
 
