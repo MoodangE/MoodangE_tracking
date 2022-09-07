@@ -1,10 +1,10 @@
-# MoodangE_ver1
+# MoodangE_tracking
 
 <details open>
 <summary>Install</summary>
 
 ```bash
-git clone https://github.com/MoodangE/MoodangE_ver1  # clone
+git clone https://github.com/MoodangE/MoodangE_tracking  # clone
 cd MoodangE_ver1
 pip install -r requirements.txt  # install
 ```
