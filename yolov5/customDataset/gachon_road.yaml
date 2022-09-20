@@ -5,17 +5,20 @@
 # └── customDatasets
 #     ├── gachon_road.yaml
 #     └── gachon_road  ← downloads here
-#       ├── images
-#       └── labels
+#       ├── train
+#       │ ├── images
+#       │ └── labels
+#       └── test
+#         ├── images
+#         └── labels
 
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
 path: ./customDataset/gachon_road  # customDataset root dir
-train: images  # train images (relative to 'path') 128 images
-val: images  # val images (relative to 'path') 128 images
-test:  # test images (optional)
+train: ./train/images  # train images (relative to 'path') 128 images
+val: ./train/images  # val images (relative to 'path') 128 images
+test: ./test/images # test images (optional)
 
 # Classes
-nc: 51
-names: ['20kmSign', 'ai', 'arrow', 'art', 'art2', 'bicycleSign', 'bio', 'buildingSign', 'bump', 'bumpSign', 'campusSign', 'crossSign', 'crosswalk', 'cube', 'diamond', 'domi', 'education', 'emart24', 'engineering', 'gachon', 'global', 'globalSign', 'handicap', 'infinity', 'it', 'law', 'lawSign', 'lifelongPlanCard', 'lotte', 'mainLib', 'master', 'mirror', 'moodangSign', 'moodangStation', 'noBicycleSign', 'noParking', 'noUturn', 'pole', 'roadkill', 'rotation', 'slowSign', 'snowRemoval', 'streetlamp_M', 'streetlamp_T', 'streetlamp_hat', 'streetlamp_r', 'student', 'studentTotal', 'vehicleBreaker', 'vision', 'yield']
-
+nc: 34
+names: ['20kmSign', 'bicycleSign', 'buildingSign', 'bump', 'bumpSign', 'campusMap', 'campusSign', 'crossSign', 'crosswalk', 'diamond', 'education', 'emart24', 'gachon', 'handicap', 'infinity', 'invertStraightRight', 'lifelongPlanCard', 'lotte', 'mainLibSign', 'mirror', 'moodangSign', 'moodangStation', 'noBicycleSign', 'rotation', 'rotationRed', 'slowSign', 'snowRemoval', 'straight', 'streetlamp_M', 'streetlamp_T', 'streetlamp_hat', 'streetlamp_r', 'vehicleBreaker', 'yield']

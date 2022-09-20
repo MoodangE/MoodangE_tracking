@@ -71,9 +71,8 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
         opt.resume, opt.noval, opt.nosave, opt.workers, opt.freeze
     callbacks.run('on_pretrain_routine_start')
 
-    # Connecting Wandb setting
     wandb.init(project="MoodangE_tracking", entity="moodange")
-    wandb.run.name = 'tracking_(9/13)'
+    wandb.run.name = '(09/20)_Aug_Rotation_2_rectX'
     wandb.run.save()
 
     # Directories
@@ -439,8 +438,7 @@ def parse_opt(known=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str, default=ROOT / 'gachon_road_yolov5s.pt', help='initial weights path')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
-    parser.add_argument('--data', type=str, default=ROOT / 'customDataset/gachon_road.yaml',
-                        help='customDataset.yaml path')
+    parser.add_argument('--data', type=str, default=ROOT / 'customDataset/gachon_road.yaml', help='customDataset.yaml path')
     parser.add_argument('--hyp', type=str, default=ROOT / 'data/hyps/hyp.scratch-low.yaml', help='hyperparameters path')
     parser.add_argument('--epochs', type=int, default=300, help='total training epochs')
     parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs, -1 for autobatch')
@@ -477,8 +475,7 @@ def parse_opt(known=False):
     parser.add_argument('--entity', default=None, help='W&B: Entity')
     parser.add_argument('--upload_dataset', nargs='?', const=True, default=False, help='W&B: Upload data, "val" option')
     parser.add_argument('--bbox_interval', type=int, default=-1, help='W&B: Set bounding-box image logging interval')
-    parser.add_argument('--artifact_alias', type=str, default='latest',
-                        help='W&B: Version of customDataset artifact to use')
+    parser.add_argument('--artifact_alias', type=str, default='latest', help='W&B: Version of customDataset artifact to use')
 
     return parser.parse_known_args()[0] if known else parser.parse_args()
 

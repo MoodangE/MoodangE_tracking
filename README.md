@@ -41,7 +41,12 @@ python tracking.py --weights "path/custom_weight.pt" --data "path/custom_yaml.ya
 
 ```bash
 cd yolov5
-python train.py --img 640 --batch 4 --epochs 5 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
+python train.py --img 1280 --batch 4 --epochs 5 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
+```
+
+```bash
+cd yolov5
+python train.py --img 1920 --rect --batch 4 --epochs 150 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
 ```
 
 </details>
