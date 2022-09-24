@@ -34,6 +34,11 @@ python tracking.py --source "path/vid.mp4" --view-img # video
 python tracking.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
 ```
 
+- Using 'custom weights' on my computer 
+```bash
+python tracking.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+```
+
 </details>
 
 <details open>
