@@ -293,8 +293,8 @@ def parse_opt():
     parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml', help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.3, help='confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.4, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='show results')
@@ -321,7 +321,7 @@ def parse_opt():
                         help='keep track of object even if object is occluded or not detected in n frames')
     parser.add_argument('--sort-min-hits', type=int, default=2,
                         help='start tracking only after n number of objects detected')
-    parser.add_argument('--sort-iou-thresh', type=float, default=0.2,
+    parser.add_argument('--sort-iou-thresh', type=float, default=0.1,
                         help='intersection-over-union threshold between two frames for association')
 
     opt = parser.parse_args()
