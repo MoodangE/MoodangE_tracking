@@ -200,13 +200,13 @@ def run(
             # NOTE: We send in detected object class too
             for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
                 dets_to_sort = np.vstack((dets_to_sort, np.array([x1, y1, x2, y2, conf, detclass])))
-            print('\n')
-            print('Input into SORT:\n', dets_to_sort, '\n')
+            # print('\n')
+            # print('Input into SORT:\n', dets_to_sort, '\n')
 
             # Run SORT
             tracked_dets = sort_tracker.update(dets_to_sort)
 
-            print('Output from SORT:\n', tracked_dets, '\n')
+            # print('Output from SORT:\n', tracked_dets, '\n')
 
             # draw boxes for visualization
             if len(tracked_dets) > 0:
@@ -232,7 +232,7 @@ def run(
                         f.write(
                             f'{frame_idx},{bbox_x1},{bbox_y1},{bbox_x2},{bbox_y2},{category},{u_overdot},{v_overdot},{s_overdot},{identity}\n')
 
-            print(f'{s} Done. ({t2 - t1})')
+            # print(f'{s} Done. ({t2 - t1})')
             # Stream results
             im0 = annotator.result()
             if view_img:
@@ -263,7 +263,11 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
-        LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
+        # LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
+
+        total_duration = time_sync() - t3
+        print(f'{s} Done.')
+        print('\tTime taken per frame: {:.4f}\n'.format(total_duration))
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
