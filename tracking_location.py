@@ -79,7 +79,6 @@ def scene_boxes(img, bbox, identities=None, categories=None, names=None, offset=
             img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
         cv2.putText(img, label, (x1, y1 +
                                  t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
-        print('\t', label)
     return img
 
 
@@ -109,7 +108,6 @@ def run(
         sort_iou_thresh=0.2
 ):
     source = str(source)
-    save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
 
@@ -180,9 +178,8 @@ def run(
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            save_path = str(save_dir / p.name)  # im.jpg
+            txt_path = str(save_dir / p.stem) + '.txt'  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
-            annotator = Annotator(im0, line_width=line_thickness, example=str(names))
 
             # Rescale boxes from img_size (temporarily downscaled size) to im0 (native) size
             det[:, :4] = scale_coords(
@@ -208,8 +205,22 @@ def run(
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
                 scene_boxes(im0, bbox_xyxy, identities, categories, names)
+
+            # Save detect Data
+            now = time.strftime('%X', time.localtime(time.time()))
+            if len(tracked_dets) != 0:
+                with open(txt_path, 'a') as f:
+                    f.write(f'[{now}] ')
+                    for j in range(len(tracked_dets)):
+                        ca = int(tracked_dets[j][4])
+                        id = int(tracked_dets[j][8])
+                        f.write(f'{names[ca]}:{id}')
+                        f.write('  ')
+                    f.write('\n')
+
+            # Time taken per frame
             total_duration = time_sync() - t3
-            print('\tTime taken per frame: {:.4f}\n'.format(total_duration))
+            print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
 
 def parse_opt():

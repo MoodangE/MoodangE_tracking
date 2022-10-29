@@ -262,12 +262,13 @@ def run(
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
 
+            # Time taken per frame
+            total_duration = time_sync() - t3
+            print('\tTime taken per frame: {:.4f}'.format(total_duration))
+
         # Print time (inference-only)
         # LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-
-        total_duration = time_sync() - t3
         print(f'{s} Done.')
-        print('\tTime taken per frame: {:.4f}\n'.format(total_duration))
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
@@ -285,7 +286,8 @@ def parse_opt():
     # YOLOv5 params
     parser.add_argument('--weights', nargs='+', type=str, default='yolov5/yolov5s.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default='yolov5/data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml', help='(optional) customDataset.yaml path')
+    parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml',
+                        help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='confidence threshold')
