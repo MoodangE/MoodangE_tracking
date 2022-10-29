@@ -72,7 +72,7 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
     callbacks.run('on_pretrain_routine_start')
 
     wandb.init(project="MoodangE_tracking", entity="moodange")
-    wandb.run.name = '(10/28)_Augmentations'
+    wandb.run.name = '(10/29)_Augmentations'
     wandb.run.save()
 
     # Directories
