@@ -26,6 +26,9 @@ from utils.plots import Annotator
 import skimage
 from sort import *
 
+# Predict
+from location_predict import location_predict
+
 torch.set_printoptions(precision=3)
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
@@ -199,18 +202,22 @@ def run(
             # Run SORT
             tracked_dets = sort_tracker.update(dets_to_sort)
 
+            # Predict value
+            predict_location = 0
+
             # draw boxes for visualization
             if len(tracked_dets) > 0:
                 bbox_xyxy = tracked_dets[:, :4]
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
                 scene_boxes(im0, bbox_xyxy, identities, categories, names)
+                predict_location = location_predict(categories, names)
 
             # Save detect Data
             now = time.strftime('%X', time.localtime(time.time()))
             if len(tracked_dets) != 0:
                 with open(txt_path, 'a') as f:
-                    f.write(f'[{now}] ')
+                    f.write(f'[{now}] : {predict_location}\t=> ')
                     for j in range(len(tracked_dets)):
                         ca = int(tracked_dets[j][4])
                         id = int(tracked_dets[j][8])
