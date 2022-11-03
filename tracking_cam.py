@@ -262,13 +262,14 @@ def run(
                         vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                     vid_writer[i].write(im0)
 
+            # Progress
+            print(f'{s} Done.')
+
             # Time taken per frame
             total_duration = time_sync() - t3
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
-        # Print time (inference-only)
-        # LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
-        print(f'{s} Done.')
+
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image

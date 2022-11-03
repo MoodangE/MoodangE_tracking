@@ -225,6 +225,9 @@ def run(
                         f.write('  ')
                     f.write('\n')
 
+            # Progress
+            print(f'{s} Done.')
+
             # Time taken per frame
             total_duration = time_sync() - t3
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
