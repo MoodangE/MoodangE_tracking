@@ -148,6 +148,7 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
+    predict_location = 'None'
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -155,22 +156,13 @@ def run(
         im /= 255  # 0 - 255 to 0.0 - 1.0
         if len(im.shape) == 3:
             im = im[None]  # expand for batch dim
-        t2 = time_sync()
-        dt[0] += t2 - t1
 
         # Inference
         visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
         pred = model(im, augment=augment, visualize=visualize)
-        t3 = time_sync()
-        dt[1] += t3 - t2
 
         # Apply NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-        dt[2] += time_sync() - t3
-
-        # Second-stage classifier (optional)
-        # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
-
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -202,16 +194,11 @@ def run(
             # Run SORT
             tracked_dets = sort_tracker.update(dets_to_sort)
 
-            # Predict value
-            predict_location = 0
-
             # draw boxes for visualization
             if len(tracked_dets) > 0:
-                bbox_xyxy = tracked_dets[:, :4]
-                identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
-                scene_boxes(im0, bbox_xyxy, identities, categories, names)
                 predict_location = location_predict(categories, names)
+                s += f'\t=> ({predict_location})'
 
             # Save detect Data
             now = time.strftime('%X', time.localtime(time.time()))
@@ -229,7 +216,7 @@ def run(
             print(f'{s} Done.')
 
             # Time taken per frame
-            total_duration = time_sync() - t3
+            total_duration = time_sync() - t1
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
 

@@ -14,20 +14,25 @@ column = ['20kmSign', 'arrow', 'bicycleSign', 'buildingSign', 'bump', 'bumpSign'
 index = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-target = ['로터리1', '로터리2', '로터리3', '로터리4', '로터리5', '로터리6', '로터리7', '로터리8', '로터리9', '로터리10', '로터리11', '로터리12', 'IT대학_정문1',
-          'IT대학_정문2', 'IT대학_정문3', 'IT대학_정문4', 'IT대학_정문5', 'IT대학_정문6', 'AI관정류장1', 'AI관정류장2', 'AI관정류장3', 'AI관정류장4',
-          'AI관정류장5', 'AI관정류장6', 'AI관정류장7', 'AI관정류장8']
+target = ['Rotary1', 'Rotary2', 'Rotary3', 'Rotary4', 'Rotary5', 'Rotary6', 'Rotary7', 'Rotary8', 'Rotary9', 'Rotary10',
+          'Rotary11', 'Rotary12', 'IT_MainGate1', 'IT_MainGate2', 'IT_MainGate3', 'IT_MainGate4', 'IT_MainGate5',
+          'IT_MainGate6', 'AI1', 'AI2', 'AI3', 'AI4', 'AI5', 'AI6', 'AI7', 'AI8']
+target.sort()
+
+# load model
+model_from_joblib = joblib.load('decision_model.pkl')
 
 
 def location_predict(categories, names):
     df = pd.DataFrame(data=index, columns=column)
 
     for j in range(len(categories)):
-        ca = names[int(j)]
-        df[ca] = 1
+        cat = int(categories[j]) if categories is not None else 0
+        label = names[cat]
+        df[label] = 1
 
-    model_from_joblib = joblib.load('decision_model.pkl')
     model_predict = model_from_joblib.predict(df)
+    model_predict = int(np.round(model_predict[0]))
+    predict_location = target[model_predict]
 
-    predict_location = target[int(model_predict[0])]
     return predict_location

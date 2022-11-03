@@ -26,6 +26,9 @@ from utils.plots import Annotator
 import skimage
 from sort import *
 
+# Predict
+from location_predict import location_predict
+
 torch.set_printoptions(precision=3)
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
@@ -52,7 +55,8 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0)):
+def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None):
+    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8,2)
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -142,7 +146,7 @@ def run(
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
-
+    predict_location = 'None'
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
@@ -153,18 +157,13 @@ def run(
         im /= 255  # 0 - 255 to 0.0 - 1.0
         if len(im.shape) == 3:
             im = im[None]  # expand for batch dim
-        t2 = time_sync()
-        dt[0] += t2 - t1
 
         # Inference
         visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
         pred = model(im, augment=augment, visualize=visualize)
-        t3 = time_sync()
-        dt[1] += t3 - t2
 
         # Apply NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-        dt[2] += time_sync() - t3
 
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
@@ -213,7 +212,11 @@ def run(
                 bbox_xyxy = tracked_dets[:, :4]
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
-                draw_boxes(im0, bbox_xyxy, identities, categories, names)
+                predict_location = location_predict(categories, names)
+                draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location)
+                s += f'\t=> ({predict_location})'
+            else:
+                cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
@@ -266,10 +269,8 @@ def run(
             print(f'{s} Done.')
 
             # Time taken per frame
-            total_duration = time_sync() - t3
+            total_duration = time_sync() - t1
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
-
-
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
