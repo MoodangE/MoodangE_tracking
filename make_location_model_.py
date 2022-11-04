@@ -34,8 +34,7 @@ def make_model():
     # X, Y 분류
     X = df_origin.drop(columns=['location'])
     y = df_origin[['location']]
-    print(X.columns)
-    print(y)
+
     # decision tree model
     # model = DecisionTreeClassifier(random_state=0)
     model = DecisionTreeRegressor(min_samples_split=4, min_impurity_decrease=0.1, random_state=0)
@@ -46,7 +45,7 @@ def make_model():
     fig.show(plot_tree(model, feature_names=X.columns, class_names=encoder.__class__, filled=True))
 
     # save model train result
-    joblib.dump(model, 'decision_model.pkl')
+    joblib.dump(model, './decision_model.pkl')
 
 
 make_model()
