@@ -17,52 +17,59 @@ pip install -r requirements.txt  # install
 downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from the latest
 YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
 
-- Using webacam
+**Command Format**
+- Save Results as Image Using webcam
 
-```bash
-python tracking.py --source 0 # webcam
-```
+   ```bash
+   python tracking_cam.py --source 0 # webcam
+   ```
 
-- Using Video file
+- Save Results as Image Using Video file
 
-```bash
-python tracking.py --source "path/vid.mp4" --view-img # video
-```
+   ```bash
+   python tracking_cam.py --source "path/vid.mp4" --view-img # video
+   ```
 
-- Using 'custom weights' 
-```bash
-python tracking.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
-```
+- Command Format about save results as image using 'custom weights' 
+   ```bash
+   python tracking_cam.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
+   ```
 
-- Using 'custom weights' on my computer 
-```bash
-python tracking.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
-```
+**Test Command**
+- Save Results as Image Using '_custom weights_'
+   ```bash
+   python tracking_cam.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   ```
+
+- Save Result as Text Using '_custom weights_'
+   ```bash
+   python tracking_location.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   ```
+
 
 </details>
 
 <details open>
 <summary>Train</summary>
 
-```bash
-cd yolov5
-python train.py --img 1280 --batch 4 --epochs 5 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
-```
+1. Change wandb run name in `yolov5/train.py`
 
-```bash
-cd yolov5
-python train.py --img 1920 --rect --batch 4 --epochs 150 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
-```
+
+2. Use this command to run training
+   ```bash
+   cd yolov5
+   python train.py --img 1920 --batch 4 --epochs 100 --data customDataset/gachon_road.yaml --cfg models/yolov5s.yaml --weights weights/yolov5s.pt
+   ```
 
 </details>
 
 <details>
 <summary>Implements Reference</summary>
 
-+ [tensorturtle/classy-sort-yolov5](https://github.com/tensorturtle/classy-sort-yolov5) See How to Configure Two
++ [tensorturtle/classy-sort-yolov5](https://github.com/tensorturtle/classy-sort-yolov5) : See How to Configure Two
   Repositories
-+ [ultralytics/YOLOv5]( https://github.com/ultralytics/yolov5) With No Modifications
-+ [abewley/SORT](https://github.com/abewley/sort) With minor Modifications
++ [ultralytics/YOLOv5]( https://github.com/ultralytics/yolov5) : With No Modifications
++ [abewley/SORT](https://github.com/abewley/sort) : With minor Modifications
 
 </details>
 
