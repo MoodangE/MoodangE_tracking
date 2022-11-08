@@ -177,7 +177,7 @@ def run(
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            txt_path = str(save_dir / p.stem) + 'moodang_bag_of_words.txt'  # im.txt
+            txt_path = str(save_dir / 'moodang_bag_of_words') + '.txt'  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
 
             # Rescale boxes from img_size (temporarily downscaled size) to im0 (native) size
