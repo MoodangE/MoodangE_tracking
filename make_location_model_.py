@@ -10,14 +10,12 @@ from sklearn.tree import plot_tree
 
 
 def make_model():
-    target = ['Rotary1', 'Rotary2', 'Rotary3', 'Rotary4', 'Rotary5', 'Rotary6', 'Rotary7', 'Rotary8', 'Rotary9',
-              'Rotary10', 'Rotary11', 'Rotary12', 'IT_MainGate1', 'IT_MainGate2', 'IT_MainGate3', 'IT_MainGate4',
-              'IT_MainGate5', 'IT_MainGate6', 'AI1', 'AI2', 'AI3', 'AI4', 'AI5', 'AI6', 'AI7', 'AI8']
 
     # 1. 데이터셋 불러오기
-    df_origin = pd.read_csv('moodang_dataset - 시트1.csv')
+    df_origin = pd.read_csv('moodang_dataset.csv')
 
-    # print(df_origin[['location']])
+    target = (df_origin.iloc[:, 0].to_list())
+    print(target)
 
     # # 데이터셋 object name yaml 파일에서 불러오기
     # with open('yolov5/customDataset/gachon_road.yaml') as f:
@@ -36,16 +34,18 @@ def make_model():
     y = df_origin[['location']]
 
     # decision tree model
-    # model = DecisionTreeClassifier(random_state=0)
-    model = DecisionTreeRegressor(min_samples_split=4, min_impurity_decrease=0.1, random_state=0)
+    # model = DecisionTreeClassifier(random_state=42)
+    model = DecisionTreeRegressor(min_samples_split=4, min_impurity_decrease=0.1, random_state=42)
     model.fit(X, y)
 
     # visualization
-    fig = plt.figure(figsize=(15, 20))
-    fig.show(plot_tree(model, feature_names=X.columns, class_names=encoder.__class__, filled=True))
+    fig = plt.figure(figsize=(30,40))
+    fig.show(plot_tree(model, feature_names=X.columns, class_names=encoder.classes_, filled=True))
 
     # save model train result
     joblib.dump(model, './decision_model.pkl')
 
+    # print
+    print('Finish')
 
 make_model()

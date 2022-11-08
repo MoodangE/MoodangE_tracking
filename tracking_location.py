@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, './yolov5')
 sys.path.insert(0, './sort')
 
+import glob
 import argparse
 import os
 import platform
@@ -113,6 +114,7 @@ def run(
     source = str(source)
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
+    video = False
 
     webcam = source.isnumeric() or source.endswith('.txt') or (is_url and not is_file)
     if is_url and is_file:
@@ -143,6 +145,7 @@ def run(
         bs = len(dataset)  # batch_size
     else:
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
+        video = True
         bs = 1  # batch_size
 
     # Run inference
@@ -150,6 +153,7 @@ def run(
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
     predict_location = 'None'
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
+        split_s = s.split()
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
         im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -204,7 +208,10 @@ def run(
             now = time.strftime('%X', time.localtime(time.time()))
             if len(tracked_dets) != 0:
                 with open(txt_path, 'a') as f:
-                    f.write(f'[{now}] : {predict_location}\t=> ')
+                    if video:
+                        f.write(f'{split_s[2]} : {predict_location}\t=> ')
+                    else:
+                        f.write(f'[{now}] : {predict_location}\t=> ')
                     for j in range(len(tracked_dets)):
                         ca = int(tracked_dets[j][4])
                         id = int(tracked_dets[j][8])
