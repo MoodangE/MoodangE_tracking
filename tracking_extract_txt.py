@@ -61,7 +61,7 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def scene_boxes_data(img, bbox, identities=None, categories=None, names=None, offset=(0, 0)):
+def scene_boxes_data_txt(bbox, categories=None, names=None, offset=(0, 0)):
     label_data = []
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
@@ -76,7 +76,7 @@ def scene_boxes_data(img, bbox, identities=None, categories=None, names=None, of
         data.append(names[cat])
         data.append(x1)  # left top x
         data.append(y1)  # left top y
-        data.append(x2 - x1)  # height
+        data.append(x2 - x1)  # width
         data.append(y2 - y1)  # height
         label_data.append(data)
 
@@ -98,7 +98,7 @@ def run(
         agnostic_nms=False,  # class-agnostic NMS
         augment=False,  # augmented inference
         visualize=False,  # visualize features
-        project=ROOT / 'inference_extract',  # save results to project/name
+        project=ROOT / 'inference_extract_txt',  # save results to project/name
         name='exp',  # save results to project/name
         exist_ok=False,  # existing project/name ok, do not increment
         line_thickness=3,  # bounding box thickness (pixels)
@@ -195,12 +195,9 @@ def run(
             for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
                 dets_to_sort = np.vstack((dets_to_sort, np.array([x1, y1, x2, y2, conf, detclass])))
 
-            # Run SORT
-            tracked_dets = sort_tracker.update(dets_to_sort)
-
             # Save detect Data
-            if len(tracked_dets) != 0:
-                label_datas = scene_boxes_data(im0, tracked_dets[:, :4], tracked_dets[:, 8], tracked_dets[:, 4], names)
+            if len(dets_to_sort) != 0:
+                label_datas = scene_boxes_data_txt(bbox=dets_to_sort[:, :4], categories=dets_to_sort[:, 5], names=names)
                 with open(txt_path, 'a') as f:
                     f.write(f'{filename_class},')
                     f.write(f'{filename_num},')
@@ -235,7 +232,7 @@ def parse_opt():
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--visualize', action='store_true', help='visualize features')
-    parser.add_argument('--project', default=ROOT / 'inference_extract', help='save results to project/name')
+    parser.add_argument('--project', default=ROOT / 'inference_extract_txt', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--line-thickness', default=3, type=int, help='bounding box thickness (pixels)')
