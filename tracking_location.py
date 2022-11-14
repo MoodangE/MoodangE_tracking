@@ -14,6 +14,7 @@ from pathlib import Path
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
+import numpy as np
 
 # yolov5
 from yolov5.models.common import DetectMultiBackend
@@ -21,11 +22,12 @@ from yolov5.utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadS
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords, check_file, \
     check_requirements, print_args, check_imshow, increment_path, LOGGER, colorstr, strip_optimizer
 from yolov5.utils.torch_utils import select_device, time_sync
-from utils.plots import Annotator
+from yolov5.utils.plots import Annotator
 
 # SORT
 import skimage
 from sort import *
+from sort.sort import Sort
 
 # Predict
 from location_predict import location_predict
