@@ -38,12 +38,12 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 **Test Command**
 - Save Results as Image Using '_custom weights_'
    ```bash
-   python tracking_cam.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   python tracking_cam.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
    ```
 
 - Save Result as Text Using '_custom weights_'
    ```bash
-   python tracking_location.py --weights best.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
    ```
 
 

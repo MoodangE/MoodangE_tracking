@@ -9,7 +9,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree import plot_tree
 
 
-def make_model():
+def make_model_decision():
 
     # 1. 데이터셋 불러오기
     df_origin = pd.read_csv('moodang_dataset.csv')
@@ -48,4 +48,4 @@ def make_model():
     # print
     print('Finish')
 
-make_model()
+make_model_decision()

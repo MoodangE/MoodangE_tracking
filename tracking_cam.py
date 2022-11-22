@@ -26,10 +26,9 @@ from yolov5.utils.plots import Annotator
 # SORT
 import skimage
 from sort import *
-from sort.sort import Sort
 
 # Predict
-from location_predict import location_predict
+from location_predict_Tfid import location_predict_vector
 
 torch.set_printoptions(precision=3)
 
@@ -57,8 +56,8 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None):
-    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8,2)
+def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None, summary_sum=None):
+    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -67,10 +66,10 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
         y2 += offset[1]
         # box text and bar
         cat = int(categories[i]) if categories is not None else 0
-
         id = int(identities[i]) if identities is not None else 0
 
         color = compute_color_for_labels(id)
+        summary_sum += names[cat] + ' '
 
         label = f'{names[cat]} | {id}'
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
@@ -79,7 +78,7 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
             img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
         cv2.putText(img, label, (x1, y1 +
                                  t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
-    return img
+    return img, summary_sum
 
 
 @torch.no_grad()
@@ -148,7 +147,12 @@ def run(
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
+
+    # Init define
     predict_location = 'None'
+    summary_data = ''
+    summary_frame = 0
+
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
@@ -214,11 +218,18 @@ def run(
                 bbox_xyxy = tracked_dets[:, :4]
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
-                predict_location = location_predict(categories, names)
-                draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location)
+                im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location,
+                                               summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
+                summary_frame += 1
             else:
                 cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
+
+            # During time
+            if summary_frame == 30:
+                predict_location = location_predict_vector(summary_data)
+                summary_data = ''
+                summary_frame = 0
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
