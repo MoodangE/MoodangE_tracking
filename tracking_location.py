@@ -110,7 +110,10 @@ def run(
 
         sort_max_age=5,
         sort_min_hits=2,
-        sort_iou_thresh=0.2
+        sort_iou_thresh=0.2,
+
+        start_point='AI',
+        sum_time=30
 ):
     source = str(source)
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -148,6 +151,11 @@ def run(
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         video = True
         bs = 1  # batch_size
+
+    # Init define
+    predict_location = start_point
+    summary_data = ''
+    summary_time = 0.0
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -204,6 +212,13 @@ def run(
                 categories = tracked_dets[:, 4]
                 predict_location = location_predict(categories, names)
                 s += f'\t=> ({predict_location})'
+                summary_time += time_sync() - t1
+
+            # During time
+            if summary_time >= sum_time:
+                predict_location = location_predict_vector(summary_data, predict_location)
+                summary_data = ''
+                summary_time = 0.0
 
             # Save detect Data
             now = time.strftime('%X', time.localtime(time.time()))
@@ -261,6 +276,13 @@ def parse_opt():
                         help='start tracking only after n number of objects detected')
     parser.add_argument('--sort-iou-thresh', type=float, default=0.1,
                         help='intersection-over-union threshold between two frames for association')
+
+    # Detecting descript
+    parser.add_argument('--start-point', type=str, default='AI', help='start point\'s category : [MainGate, Tunnel, '
+                                                                      'Education, EduMainLib, Student, AI, MainLib, '
+                                                                      'Rotary, Art]')
+    parser.add_argument('--sum-time', type=float, default=4.0, help='Designated as 4 seconds based on the image of '
+                                                                    'FPS 30.')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand

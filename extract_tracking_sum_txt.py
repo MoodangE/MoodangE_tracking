@@ -26,9 +26,6 @@ from yolov5.utils.plots import Annotator
 import skimage
 from sort import *
 
-# Predict
-from location_predict import location_predict
-
 torch.set_printoptions(precision=3)
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
@@ -62,7 +59,7 @@ def compute_color_for_labels(label):
 
 
 def scene_boxes_data_txt(bbox, categories=None, names=None, offset=(0, 0)):
-    label_data = []
+    label_data = ''
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -72,13 +69,7 @@ def scene_boxes_data_txt(bbox, categories=None, names=None, offset=(0, 0)):
         # box text and bar
         cat = int(categories[i]) if categories is not None else 0
 
-        data = []
-        data.append(names[cat])
-        data.append(x1)  # left top x
-        data.append(y1)  # left top y
-        data.append(x2 - x1)  # width
-        data.append(y2 - y1)  # height
-        label_data.append(data)
+        label_data += names[cat]+'\n'
 
     return label_data
 
@@ -98,7 +89,7 @@ def run(
         agnostic_nms=False,  # class-agnostic NMS
         augment=False,  # augmented inference
         visualize=False,  # visualize features
-        project=ROOT / 'inference_extract_txt',  # save results to project/name
+        project=ROOT / 'inference_extract_sum_txt',  # save results to project/name
         name='exp',  # save results to project/name
         exist_ok=False,  # existing project/name ok, do not increment
         line_thickness=3,  # bounding box thickness (pixels)
@@ -112,20 +103,23 @@ def run(
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
 
-    webcam = source.isnumeric() or source.endswith('.txt') or (is_url and not is_file)
+    webcam = source.isnumeric() or source.endswith(
+        '.txt') or (is_url and not is_file)
     if is_url and is_file:
         source = check_file(source)  # download
 
     # Directory and CUDA settings for YOLOv5
     device = select_device(device)
-    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
+    save_dir = increment_path(Path(project) / name,
+                              exist_ok=exist_ok)  # increment run
     if os.path.exists(save_dir):
         shutil.rmtree(save_dir)  # delete output folder
     os.makedirs(save_dir)  # make new output folder
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load YOLOv5 model
-    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
+    model = DetectMultiBackend(
+        weights, device=device, dnn=dnn, data=data, fp16=half)
     stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
@@ -146,8 +140,7 @@ def run(
         filename = split_s[-1]
         filename = ((filename.split('/'))[-1]).split('.')
         filename = filename[0].split('_')
-        filename_class = filename[0]
-        filename_num = filename[-1]
+        filename_parts = filename[0]
 
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
@@ -172,7 +165,7 @@ def run(
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            txt_path = str(save_dir / 'moodang_bag_of_words') + '.txt'  # im.txt
+            txt_path = str(save_dir / filename_parts) + '.txt'  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
 
             # Rescale boxes from img_size (temporarily downscaled size) to im0 (native) size
@@ -194,10 +187,7 @@ def run(
             if len(dets_to_sort) != 0:
                 label_datas = scene_boxes_data_txt(bbox=dets_to_sort[:, :4], categories=dets_to_sort[:, 5], names=names)
                 with open(txt_path, 'a') as f:
-                    f.write(f'{filename_class},')
-                    f.write(f'{filename_num},')
                     f.write(f'{label_datas}')
-                    f.write('\n')
 
             # Progress
             print(f'{s} Done.')
@@ -207,31 +197,47 @@ def run(
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
 
+
 def parse_opt():
     parser = argparse.ArgumentParser()
 
     # YOLOv5 params
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5/yolov5s.pt', help='model path(s)')
+    parser.add_argument('--weights', nargs='+', type=str,
+                        default=ROOT / 'yolov5/yolov5s.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default=ROOT / 'yolov5/data/images',
                         help='file/dir/URL/glob, 0 for webcam')
     parser.add_argument('--data', type=str, default=ROOT / 'yolov5/data/coco128.yaml',
                         help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.3, help='confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.4, help='NMS IoU threshold')
-    parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
-    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --classes 0, or --classes 0 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--visualize', action='store_true', help='visualize features')
-    parser.add_argument('--project', default=ROOT / 'inference_extract_txt', help='save results to project/name')
-    parser.add_argument('--name', default='exp', help='save results to project/name')
-    parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
-    parser.add_argument('--line-thickness', default=3, type=int, help='bounding box thickness (pixels)')
-    parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
+    parser.add_argument('--conf-thres', type=float,
+                        default=0.3, help='confidence threshold')
+    parser.add_argument('--iou-thres', type=float,
+                        default=0.4, help='NMS IoU threshold')
+    parser.add_argument('--max-det', type=int, default=1000,
+                        help='maximum detections per image')
+    parser.add_argument('--device', default='',
+                        help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--nosave', action='store_true',
+                        help='do not save images/videos')
+    parser.add_argument('--classes', nargs='+', type=int,
+                        help='filter by class: --classes 0, or --classes 0 2 3')
+    parser.add_argument('--agnostic-nms', action='store_true',
+                        help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true',
+                        help='augmented inference')
+    parser.add_argument('--visualize', action='store_true',
+                        help='visualize features')
+    parser.add_argument('--project', default=ROOT /
+                        'inference_extract_sum_txt', help='save results to project/name')
+    parser.add_argument('--name', default='exp',
+                        help='save results to project/name')
+    parser.add_argument('--exist-ok', action='store_true',
+                        help='existing project/name ok, do not increment')
+    parser.add_argument('--line-thickness', default=3,
+                        type=int, help='bounding box thickness (pixels)')
+    parser.add_argument('--dnn', action='store_true',
+                        help='use OpenCV DNN for ONNX inference')
 
     # SORT params
     parser.add_argument('--sort-max-age', type=int, default=5,

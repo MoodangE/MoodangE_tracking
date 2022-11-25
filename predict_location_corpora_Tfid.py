@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def make_model_tfid():
+def make_corpora_tfid():
     ai = ''
     with open("part_data/AI.txt", 'r') as f:
         data = f.read()
@@ -26,13 +26,6 @@ def make_model_tfid():
         data = f.read()
         art += data + ' '
     art = art.replace('\n', ' ')
-    f.close()
-
-    it = ''
-    with open("part_data/IT.txt", 'r') as f:
-        data = f.read()
-        it += data + ' '
-    it = it.replace('\n', ' ')
     f.close()
 
     main_lib = ''
@@ -85,8 +78,8 @@ def make_model_tfid():
     f.close()
 
     corpora = [
-        # AI, Art, IT, MainLib, Rotary, Education, EduMainLib, MainGate, Student, Tunnel
-        ai, art, education, edu_main_lib, it, main_gate, main_lib, rotary, student, tunnel
+        # AI, Art, MainLib, Rotary, Education, EduMainLib, MainGate, Student, Tunnel
+        ai, art, education, edu_main_lib, main_gate, main_lib, rotary, student, tunnel
     ]
     return corpora
 #     print(corpora)

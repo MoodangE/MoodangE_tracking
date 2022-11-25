@@ -1,6 +1,8 @@
 # python interpreter searches these subdirectories for modules
 import sys
 
+from sort.sort import Sort
+
 sys.path.insert(0, './yolov5')
 sys.path.insert(0, './sort')
 
@@ -28,7 +30,7 @@ import skimage
 from sort import *
 
 # Predict
-from location_predict_Tfid import location_predict_vector
+from predict_location_Tfid import location_predict_vector
 
 torch.set_printoptions(precision=3)
 
@@ -108,7 +110,10 @@ def run(
 
         sort_max_age=5,
         sort_min_hits=2,
-        sort_iou_thresh=0.2
+        sort_iou_thresh=0.2,
+
+        start_point='AI',
+        sum_time=30
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -149,9 +154,9 @@ def run(
     vid_path, vid_writer = [None] * bs, [None] * bs
 
     # Init define
-    predict_location = 'None'
+    predict_location = start_point
     summary_data = ''
-    summary_frame = 0
+    summary_time = 0.0
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -221,15 +226,15 @@ def run(
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location,
                                                summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
-                summary_frame += 1
+                summary_time += time_sync() - t1
             else:
                 cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
 
             # During time
-            if summary_frame == 30:
-                predict_location = location_predict_vector(summary_data)
+            if summary_time >= sum_time:
+                predict_location = location_predict_vector(summary_data, predict_location)
                 summary_data = ''
-                summary_frame = 0
+                summary_time = 0.0
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
@@ -331,6 +336,13 @@ def parse_opt():
                         help='start tracking only after n number of objects detected')
     parser.add_argument('--sort-iou-thresh', type=float, default=0.1,
                         help='intersection-over-union threshold between two frames for association')
+
+    # Detecting descript
+    parser.add_argument('--start-point', type=str, default='AI', help='start point\'s category : [MainGate, Tunnel, '
+                                                                      'Education, EduMainLib, Student, AI, MainLib, '
+                                                                      'Rotary, Art]')
+    parser.add_argument('--sum-time', type=float, default=4.0, help='Designated as 4 seconds based on the image of '
+                                                                    'FPS 30.')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand

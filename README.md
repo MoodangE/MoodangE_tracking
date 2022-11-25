@@ -10,12 +10,18 @@ pip install -r requirements.txt  # install
 ```
 
 </details>
+
+<br/>
+
+
 <details open>
 <summary>Inference with tracking.py</summary>
 
 `tracking.py` runs inference on a variety of sources,
 downloading [models](https://github.com/ultralytics/yolov5/tree/master/models) automatically from the latest
 YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving results to `runs/detect`.
+
+<br/>
 
 **Command Format**
 - Save Results as Image Using webcam
@@ -35,19 +41,39 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
    python tracking_cam.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
    ```
 
-**Test Command**
-- Save Results as Image Using '_custom weights_'
+<br/>
+
+**Test Command (Detecting information)**
+- Save Results (Detecting information) as Image Using '_custom weights_'
    ```bash
    python tracking_cam.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
    ```
 
-- Save Result as Text Using '_custom weights_'
+- Save Result (Detecting information) as Text Using '_custom weights_'
    ```bash
    python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
    ```
 
+<br/>
+
+**Test Command (Prediction of Gachon University's Location)**
+
+* When collecting information to track your location, it is recommended that you collect it for about 5 seconds.<br>
+  Ex) FPS = 30, 
+
+- Save Results (Prediction of Gachon University's Location) as Image Using '_custom weights_'
+   ```bash
+   python tracking_cam.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   ```
+
+- Save Result (Prediction of Gachon University's Location) as Text Using '_custom weights_'
+   ```bash
+   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   ```
 
 </details>
+
+<br/>
 
 <details open>
 <summary>Train</summary>
@@ -63,6 +89,8 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 
 </details>
 
+<br/>
+
 <details>
 <summary>Implements Reference</summary>
 
@@ -73,6 +101,7 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 
 </details>
 
+<br/>
 
 <details>
 <summary>Error & Solution</summary>
