@@ -113,7 +113,7 @@ def run(
         sort_iou_thresh=0.2,
 
         start_point='AI',
-        sum_time=30
+        sum_time=4.0
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
