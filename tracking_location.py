@@ -29,7 +29,7 @@ import skimage
 from sort import *
 
 # Predict
-from location_predict import location_predict
+from predict_location_Tfid import location_predict_vector
 
 torch.set_printoptions(precision=3)
 
@@ -55,36 +55,11 @@ def bbox_rel(*xyxy):
     return x_c, y_c, w, h
 
 
-def compute_color_for_labels(label):
-    """
-    Simple function that adds fixed color depending on the class
-    """
-    color = [int((p * (label ** 2 - label + 1)) % 255) for p in palette]
-    return tuple(color)
-
-
-def scene_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0)):
+def scene_boxes(bbox, categories=None, names=None, offset=(0, 0), summary_sum=None):
     for i, box in enumerate(bbox):
-        x1, y1, x2, y2 = [int(i) for i in box]
-        x1 += offset[0]
-        x2 += offset[0]
-        y1 += offset[1]
-        y2 += offset[1]
-        # box text and bar
         cat = int(categories[i]) if categories is not None else 0
-
-        id = int(identities[i]) if identities is not None else 0
-
-        color = compute_color_for_labels(id)
-
-        label = f'{names[cat]} | {id}'
-        t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
-        cv2.rectangle(
-            img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
-        cv2.putText(img, label, (x1, y1 +
-                                 t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
-    return img
+        summary_sum += names[cat] + ' '
+    return summary_sum
 
 
 @torch.no_grad()
@@ -160,7 +135,6 @@ def run(
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
-    predict_location = 'None'
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
         split_s = s.split()
         t1 = time_sync()
@@ -207,10 +181,11 @@ def run(
             # Run SORT
             tracked_dets = sort_tracker.update(dets_to_sort)
 
-            # draw boxes for visualization
+            # Detect data savet to summay_data
             if len(tracked_dets) > 0:
+                bbox_xyxy = tracked_dets[:, :4]
                 categories = tracked_dets[:, 4]
-                predict_location = location_predict(categories, names)
+                summary_data = scene_boxes(bbox_xyxy, categories, names)
                 s += f'\t=> ({predict_location})'
                 summary_time += time_sync() - t1
 
