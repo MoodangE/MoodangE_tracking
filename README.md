@@ -43,19 +43,6 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 
 <br/>
 
-**Test Command (Detecting information)**
-- Save Results (Detecting information) as Image Using '_custom weights_'
-   ```bash
-   python tracking_cam.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
-   ```
-
-- Save Result (Detecting information) as Text Using '_custom weights_'
-   ```bash
-   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
-   ```
-
-<br/>
-
 **Test Command (Prediction of Gachon University's Location)**
 
 * When collecting information to track your location, it is recommended that you collect it for about 5 seconds.<br>
@@ -68,7 +55,7 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 
 - Save Result (Prediction of Gachon University's Location) as Text Using '_custom weights_'
    ```bash
-   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0
    ```
 
 </details>

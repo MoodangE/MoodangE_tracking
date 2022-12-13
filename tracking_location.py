@@ -185,13 +185,14 @@ def run(
             if len(tracked_dets) > 0:
                 bbox_xyxy = tracked_dets[:, :4]
                 categories = tracked_dets[:, 4]
-                summary_data = scene_boxes(bbox_xyxy, categories, names)
+                summary_data = scene_boxes(bbox_xyxy, categories, names, summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
                 summary_time += time_sync() - t1
 
             # During time
             if summary_time >= sum_time:
                 predict_location = location_predict_vector(summary_data, predict_location)
+                print('Current : {}\tDuring time : {}'.format(predict_location, summary_time))
                 summary_data = ''
                 summary_time = 0.0
 
@@ -209,13 +210,6 @@ def run(
                         f.write(f'{names[ca]}:{id}')
                         f.write('  ')
                     f.write('\n')
-
-            # Progress
-            print(f'{s} Done.')
-
-            # Time taken per frame
-            total_duration = time_sync() - t1
-            print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
 
 def parse_opt():
