@@ -57,6 +57,11 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
    ```bash
    python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0
    ```
+  
+- Save Result (Calculate of person confusion) as Text Using 'coco128.yaml'
+   ```bash
+   python tracking_person.py --source 0
+   ```
 
 </details>
 
