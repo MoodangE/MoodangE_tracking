@@ -74,7 +74,7 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
 
         if cat == 0:
             color = compute_color_for_labels(id)
-            summary_sum += str(id) + '\n'
+            summary_sum.append(id)
 
             label = f'{names[cat]} | {id}'
             t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
@@ -158,7 +158,7 @@ def run(
 
     # Init define
     predict_congestion = 'None'
-    summary_data = ''
+    summary_data = []
     summary_time = 0.0
 
     # Run inference
@@ -235,7 +235,7 @@ def run(
             # During time
             if summary_time >= sum_time:
                 predict_congestion = calculate_congestion(summary_data)
-                summary_data = ''
+                summary_data = []
                 summary_time = 0.0
 
             # Write detections to file. NOTE: Not MOT-compliant format.
