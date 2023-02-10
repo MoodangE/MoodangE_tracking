@@ -1,20 +1,23 @@
 import collections
 
 
-def calculate_congestion(datas):
-    # Count id values
-    count_person = collections.Counter(datas)
+def calculate_congestion(datas, frame):
+    # 80 percent of summary_frame
+    criterion = int(0.8 * frame)
 
-    # If FPS = 30 and sum_time = 5, n = FPS * 3
-    count_standing = len(count_person.most_common(n=5))
+    # Count id values
+    count_person = dict(collections.Counter(datas))
+    count_standing = 0
+
+    for i in count_person.values():
+        if i > criterion:
+            count_standing += 1
 
     if count_standing < 10:
-        result = 'Spare'
+        return 'Spare'
     elif count_standing < 18:
-        result = 'General'
+        return 'General'
     elif count_standing < 23:
-        result = 'Caution'
+        return 'Caution'
     else:
-        result = 'Congestion'
-
-    return result
+        return 'Congestion'

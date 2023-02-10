@@ -8,9 +8,11 @@
 /.idea/.gitignore
 inference_cam/
 inference_location/
+inference_person/
 inference_extract_txt/
 inference_extract_img/
 yolov5/customDataset/train/
 yolov5/customDataset/test/
 .DS_Store
 __pycache__/
+sort/__pycache__/

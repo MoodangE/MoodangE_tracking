@@ -115,7 +115,6 @@ def run(
         sort_min_hits=2,
         sort_iou_thresh=0.2,
 
-        start_point='AI',
         sum_time=4.0
 ):
     source = str(source)
@@ -160,6 +159,7 @@ def run(
     predict_congestion = 'None'
     summary_data = []
     summary_time = 0.0
+    summary_frame = 0
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -229,14 +229,16 @@ def run(
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names,
                                                congestion=predict_congestion, summary_sum=summary_data)
                 summary_time += time_sync() - t1
+                summary_frame += 1
             else:
                 cv2.putText(im0, predict_congestion, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
 
             # During time
             if summary_time >= sum_time:
-                predict_congestion = calculate_congestion(summary_data)
+                predict_congestion = calculate_congestion(summary_data,summary_frame)
                 summary_data = []
                 summary_time = 0.0
+                summary_frame = 0
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
