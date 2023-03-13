@@ -58,7 +58,8 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), congestion=None, summary_sum=None):
+def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), congestion=None,
+               summary_sum=None):
     cv2.putText(img, congestion, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
     real_time_count = 0
     for i, box in enumerate(bbox):
@@ -76,6 +77,18 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
             color = compute_color_for_labels(id)
             summary_sum.append(id)
 
+            # Person blur
+            try:
+                face_frame = img[y1:y2, x1:x2]
+                fh, fw, fc = face_frame.shape
+                face_frame = cv2.resize(face_frame, dsize=(0, 0), fx=0.04, fy=0.04)  # reduction
+                face_frame = cv2.resize(face_frame, (fw, fh), interpolation=cv2.INTER_AREA)  # augmentation
+                img[y1:y2, x1:x2] = face_frame  # Mosaic the detected face area
+            except Exception as e:
+                print(str(e))
+
+
+            # Person Tagging
             label = f'{names[cat]} | {id}'
             t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
@@ -83,6 +96,8 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
                 img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
             cv2.putText(img, label, (x1, y1 +
                                      t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
+
+
     return img, summary_sum
 
 

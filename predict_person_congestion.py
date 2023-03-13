@@ -13,11 +13,14 @@ def calculate_congestion(datas, frame):
         if i > criterion:
             count_standing += 1
 
-    if count_standing < 10:
-        return 'Spare'
+    if count_standing < 14:
+        value = 'Spare'
     elif count_standing < 18:
-        return 'General'
+        value = 'General'
     elif count_standing < 23:
-        return 'Caution'
+        value = 'Caution'
     else:
-        return 'Congestion'
+        value = 'Congestion'
+    value += ', standing person: ' + str(count_standing)
+
+    return value
