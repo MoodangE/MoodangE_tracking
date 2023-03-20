@@ -10,6 +10,7 @@ target = ['AI', 'Art', 'Education', 'EduMainLib', 'MainGate', 'MainLib', 'Rotary
 map_sequence = ['MainGate', 'Tunnel', 'Education', 'EduMainLib', 'Student', 'AI', 'MainLib', 'Rotary', 'Art']
 sequence_count = len(map_sequence)
 
+standard_value = 0.5
 
 def location_predict_vector(datas, previous_location):
     corpora_tmp = corpora.copy()
@@ -20,22 +21,24 @@ def location_predict_vector(datas, previous_location):
     similarity = pd.DataFrame(similarity, index=['Similarity'], columns=target)
 
     predict = similarity.T.sort_values(by='Similarity', ascending=False).head(3)
-    print('\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tprevious:', previous_location, '\t predict:', predict)
-    predict = predict.index.tolist()
-    result = predict[0]
+    print('\nprevious:', previous_location, '\npredict\n', predict, '\n')
+
+    predict_location = predict.index.tolist()
+    predict_perscent = sum(predict.values.tolist(), [])
+    result = predict_location[0]
 
     if previous_location != 'None':
         previous_code = map_sequence.index(previous_location)
         predict_code = (previous_code + 1) % sequence_count
-        for i, percentage in enumerate(predict):
-            if percentage == previous_location:
-                result = percentage
+        for i, percentage in enumerate(zip(predict_location, predict_perscent)):
+            if percentage[0] == previous_location and standard_value < percentage[1]:
+                result = percentage[0]
                 break
-            percentage_code = map_sequence.index(percentage)
-            if percentage_code == predict_code:
-                result = percentage
+            percentage_code = map_sequence.index(percentage[0])
+            if percentage_code == predict_code and standard_value < percentage[1]:
+                result = percentage[0]
                 break
-            elif i == len(predict) - 1:
+            elif i == len(predict_location) - 1:
                 result = previous_location
 
     return result

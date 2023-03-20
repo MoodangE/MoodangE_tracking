@@ -226,15 +226,8 @@ def run(
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location,
                                                summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
-                summary_time += time_sync() - t1
             else:
                 cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
-
-            # During time
-            if summary_time >= sum_time:
-                predict_location = location_predict_vector(summary_data, predict_location)
-                summary_data = ''
-                summary_time = 0.0
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
@@ -290,6 +283,13 @@ def run(
             total_duration = time_sync() - t1
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
+        # During time
+        summary_time += time_sync() - t1
+        if summary_time >= sum_time:
+            predict_location = location_predict_vector(summary_data, predict_location)
+            summary_data = ''
+            summary_time = 0.0
+
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -304,9 +304,9 @@ def parse_opt():
     parser = argparse.ArgumentParser()
 
     # YOLOv5 params
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov5/yolov5s.pt', help='model path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='best_1107.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default='yolov5/data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default='yolov5/data/coco128.yaml',
+    parser.add_argument('--data', type=str, default='yolov5/customDataset/gachon_road.yaml',
                         help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')

@@ -189,14 +189,6 @@ def run(
                 categories = tracked_dets[:, 4]
                 summary_data = scene_boxes(bbox_xyxy, categories, names, summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
-                summary_time += time_sync() - t1
-
-            # During time
-            if summary_time >= sum_time:
-                predict_location = location_predict_vector(summary_data, predict_location)
-                print('Current : {}\tDuring time : {}'.format(predict_location, summary_time))
-                summary_data = ''
-                summary_time = 0.0
 
             # Save detect Data
             now = time.strftime('%X', time.localtime(time.time()))
@@ -213,15 +205,22 @@ def run(
                         f.write('  ')
                     f.write('\n')
 
+        # During time
+        summary_time += time_sync() - t1
+        if summary_time >= sum_time:
+            predict_location = location_predict_vector(summary_data, predict_location)
+            print('Current : {}\tDuring time : {}'.format(predict_location, summary_time))
+            summary_data = ''
+            summary_time = 0.0
 
 def parse_opt():
     parser = argparse.ArgumentParser()
 
     # YOLOv5 params
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5/yolov5s.pt', help='model path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='best_1107.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default=ROOT / 'yolov5/data/images',
                         help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default=ROOT / 'yolov5/data/coco128.yaml',
+    parser.add_argument('--data', type=str, default='yolov5/customDataset/gachon_road.yaml',
                         help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')

@@ -48,19 +48,19 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 * When collecting information to track your location, it is recommended that you collect it for about 5 seconds.<br>
   Ex) FPS = 30, 
 
-- Save Results (Prediction of Gachon University's Location) as Image Using '_custom weights_'
+- Save Results (Prediction of Gachon University's Location) as Image Using '_custom weights_'. (Weight default: best_1107.pt)
    ```bash
-   python tracking_cam.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0 --view-img
+   python tracking_location_cam.py --source 0 --view-img
    ```
 
-- Save Result (Prediction of Gachon University's Location) as Text Using '_custom weights_'
+- Save Result (Prediction of Gachon University's Location) as Text Using '_custom weights_'. (Weight default: best_1107.pt)
    ```bash
-   python tracking_location.py --weights best_1107.pt --data yolov5/customDataset/gachon_road.yaml --source 0
+   python tracking_location_text.py  --source 0
    ```
   
 - Save Result (Calculate of person confusion) as Text Using 'coco128.yaml'
    ```bash
-   python tracking_person.py --source 0
+   python tracking_person_cam.py --source 0
    ```
 
 </details>
