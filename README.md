@@ -23,44 +23,70 @@ YOLOv5 [release](https://github.com/ultralytics/yolov5/releases) and saving resu
 
 <br/>
 
-**Command Format**
+### Command Format
+
 - Save Results as Image Using webcam
 
    ```bash
-   python tracking_cam.py --source 0 # webcam
+   python "file_name".py --source 0 # webcam
    ```
 
 - Save Results as Image Using Video file
 
    ```bash
-   python tracking_cam.py --source "path/vid.mp4" --view-img # video
+   python "file_name".py --source "path/vid.mp4" --view-img # video
    ```
 
-- Command Format about save results as image using 'custom weights' 
+- Command Format about save results as image using 'custom weights'
    ```bash
-   python tracking_cam.py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
+   python "file_name".py --weights "path/custom_weight.pt" --data "path/custom_yaml.yaml" --source "path\vide.mp4" --view-img
    ```
 
 <br/>
 
-**Test Command (Prediction of Gachon University's Location)**
+### Test Command (Prediction of Gachon University's Location)
 
 * When collecting information to track your location, it is recommended that you collect it for about 5 seconds.<br>
-  Ex) FPS = 30, 
+  Ex) FPS = 30,
 
-- Save Results (Prediction of Gachon University's Location) as Image Using '_custom weights_'. (Weight default: best_1107.pt)
+#### 1. Predict Location
+
+- Default values
+    - Weight : best_1107.pt
+    - Data : gachon_road.yaml
+    - Start point : AI
+    - All files are associated with the realtime database in the firebase to store this information.
+
+- Save Results (Prediction of Gachon University's Location) as **Image** or **Video**
    ```bash
    python tracking_location_cam.py --source 0 --view-img
    ```
 
-- Save Result (Prediction of Gachon University's Location) as Text Using '_custom weights_'. (Weight default: best_1107.pt)
+- Save Result (Prediction of Gachon University's Location) as **Text**
    ```bash
    python tracking_location_text.py  --source 0
    ```
   
-- Save Result (Calculate of person confusion) as Text Using 'coco128.yaml'
+- Not Save Result (Prediction of Gachon University's Location)
+   ```bash
+   python tracking_location_db.py  --source 0
+   ```
+
+#### 2. Calculate Congestion
+
+- Default values
+    - Weight : yolov5s.pt
+    - Data : coco128.yaml
+    - Filming location : MainGate
+    - All files are associated with the realtime database in the firebase to store this information.
+
+- Save Result (Calculate of person confusion) as **Image** or **Video**
    ```bash
    python tracking_person_cam.py --source 0
+   ```
+- Not Save Result (Calculate of person confusion)
+   ```bash
+   python tracking_person_db.py --source 0
    ```
 
 </details>

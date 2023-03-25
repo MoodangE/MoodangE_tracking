@@ -16,3 +16,5 @@ yolov5/customDataset/test/
 .DS_Store
 __pycache__/
 sort/__pycache__/
+/serviceAccountKey.json
+/serviceDatabaseUrl.json

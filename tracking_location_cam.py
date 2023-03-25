@@ -113,7 +113,8 @@ def run(
         sort_iou_thresh=0.2,
 
         start_point='AI',
-        sum_time=4.0
+        sum_time=5.0,
+        bus_id=1
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -286,7 +287,7 @@ def run(
         # During time
         summary_time += time_sync() - t1
         if summary_time >= sum_time:
-            predict_location = location_predict_vector(summary_data, predict_location)
+            predict_location = location_predict_vector(summary_data, predict_location, bus_id)
             summary_data = ''
             summary_time = 0.0
 
@@ -341,8 +342,9 @@ def parse_opt():
     parser.add_argument('--start-point', type=str, default='AI', help='start point\'s category : [MainGate, Tunnel, '
                                                                       'Education, EduMainLib, Student, AI, MainLib, '
                                                                       'Rotary, Art]')
-    parser.add_argument('--sum-time', type=float, default=4.0, help='Designated as 4 seconds based on the image of '
+    parser.add_argument('--sum-time', type=float, default=5.0, help='Designated as 4 seconds based on the image of '
                                                                     'FPS 30.')
+    parser.add_argument('--bus-id',type=int, default=1, help='Check bus number or device mac number')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand

@@ -87,7 +87,6 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
             except Exception as e:
                 print(str(e))
 
-
             # Person Tagging
             label = f'{names[cat]} | {id}'
             t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
@@ -96,7 +95,6 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
                 img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
             cv2.putText(img, label, (x1, y1 +
                                      t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
-
 
     return img, summary_sum
 
@@ -130,7 +128,8 @@ def run(
         sort_min_hits=2,
         sort_iou_thresh=0.2,
 
-        sum_time=4.0
+        sum_time=4.0,
+        filming_location = 'MainGate'
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -250,7 +249,7 @@ def run(
 
             # During time
             if summary_time >= sum_time:
-                predict_congestion = calculate_congestion(summary_data,summary_frame)
+                predict_congestion = calculate_congestion(summary_data, summary_frame, filming_location)
                 summary_data = []
                 summary_time = 0.0
                 summary_frame = 0
@@ -359,6 +358,8 @@ def parse_opt():
     # Detecting descript
     parser.add_argument('--sum-time', type=float, default=5.0, help='Designated as 4 seconds based on the image of '
                                                                     'FPS 30.')
+    parser.add_argument('--filming-location', type=str, default='MainGate',
+                        help='Congestion level filming location is \'MainGate\' or \'AI\'')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
