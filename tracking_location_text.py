@@ -91,7 +91,7 @@ def run(
 
         start_point='AI',
         sum_time=5.0,
-        bus_id=1
+        bus_id='moodang_1'
 ):
     source = str(source)
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -254,7 +254,8 @@ def parse_opt():
                                                                       'Rotary, Art]')
     parser.add_argument('--sum-time', type=float, default=5.0, help='Designated as 4 seconds based on the image of '
                                                                     'FPS 30.')
-    parser.add_argument('--bus-id',type=int, default=1, help='Check bus number or device mac number')
+    parser.add_argument('--bus-id', type=str, default='moodang_1', help='Check bus number(moodang_1) or device mac '
+                                                                        'number')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
