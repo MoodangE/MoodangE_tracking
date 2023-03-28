@@ -78,9 +78,6 @@ def run(
         agnostic_nms=False,  # class-agnostic NMS
         augment=False,  # augmented inference
         visualize=False,  # visualize features
-        project=ROOT / 'inference_location',  # save results to project/name
-        name='exp',  # save results to project/name
-        exist_ok=False,  # existing project/name ok, do not increment
         dnn=False,  # use OpenCV DNN for ONNX inference
 
         sort_max_age=5,
@@ -107,10 +104,6 @@ def run(
 
     # Directory and CUDA settings for YOLOv5
     device = select_device(device)
-    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
-    if os.path.exists(save_dir):
-        shutil.rmtree(save_dir)  # delete output folder
-    os.makedirs(save_dir)  # make new output folder
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load YOLOv5 model
@@ -146,7 +139,6 @@ def run(
             im = im[None]  # expand for batch dim
 
         # Inference
-        visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
         pred = model(im, augment=augment, visualize=visualize)
 
         # Apply NMS
@@ -160,8 +152,6 @@ def run(
             else:
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
-            p = Path(p)  # to Path
-            txt_path = str(save_dir / p.stem) + '.txt'  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
 
             # Rescale boxes from img_size (temporarily downscaled size) to im0 (native) size
@@ -217,9 +207,6 @@ def parse_opt():
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--visualize', action='store_true', help='visualize features')
-    parser.add_argument('--project', default=ROOT / 'inference_location', help='save results to project/name')
-    parser.add_argument('--name', default='exp', help='save results to project/name')
-    parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
 
     # SORT params
