@@ -114,7 +114,8 @@ def run(
 
         start_point='AI',
         sum_time=5.0,
-        bus_id='moodang_1'
+        bus_id='moodang_1',
+        bus_power=True
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -287,7 +288,7 @@ def run(
         # During time
         summary_time += time_sync() - t1
         if summary_time >= sum_time:
-            predict_location = location_predict_vector(summary_data, predict_location, bus_id)
+            predict_location = location_predict_vector(summary_data, predict_location, bus_id, bus_power)
             summary_data = ''
             summary_time = 0.0
 
@@ -346,6 +347,8 @@ def parse_opt():
                                                                     'FPS 30.')
     parser.add_argument('--bus-id', type=str, default='moodang_1', help='Check bus number(moodang_1) or device mac '
                                                                         'number')
+    parser.add_argument('--bus-power', type=bool, default=True, help='Indicates whether the bus is starting or not '
+                                                                     'in boolean form')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand

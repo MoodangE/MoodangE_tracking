@@ -27,7 +27,7 @@ sequence_count = len(map_sequence)
 standard_value = 0.5
 
 
-def location_predict_vector(datas, previous_location, bus_id):
+def location_predict_vector(datas, previous_location, bus_id, bus_power):
     corpora_tmp = corpora.copy()
     corpora_tmp.append(datas)
 
@@ -77,6 +77,7 @@ def location_predict_vector(datas, previous_location, bus_id):
         ref.update({'location': result,
                     'up': up_state,
                     'down': down_state,
+                    'power': bus_power,
                     })
 
     return result

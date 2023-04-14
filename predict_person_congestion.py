@@ -27,18 +27,19 @@ def calculate_congestion(datas, frame, filming_location):
             count_standing += 1
 
     if count_standing < 14:
-        value = '여유'
+        level = 'Spare'
     elif count_standing < 18:
-        value = '보통'
+        level = 'General'
     elif count_standing < 23:
-        value = '주의'
+        level = 'Caution'
     else:
-        value = '혼잡'
-    # value += ', standing person: ' + str(count_standing)
+        level = 'Congestion'
 
     # Save predict result to firebase Realtime Database
-    data_path = 'dataList/Congestion'
+    data_path = 'dataList/Congestion' + str(filming_location)
     ref = db.reference(data_path)
-    ref.update({filming_location: value})
+    ref.update({'level': level,
+                'person': count_standing
+                })
 
-    return value
+    return level
