@@ -59,7 +59,7 @@ def compute_color_for_labels(label):
 
 
 def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None, summary_sum=None):
-    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
+    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -229,7 +229,7 @@ def run(
                                                summary_sum=summary_data)
                 s += f'\t=> ({predict_location})'
             else:
-                cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
+                cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:

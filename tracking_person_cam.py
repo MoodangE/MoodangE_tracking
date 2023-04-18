@@ -59,9 +59,10 @@ def compute_color_for_labels(label):
 
 
 def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), congestion=None,
-               summary_sum=None):
-    cv2.putText(img, congestion, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
-    real_time_count = 0
+               person=None, summary_sum=None):
+    input_text = congestion + " " + str(person)
+    cv2.putText(img, input_text, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -89,12 +90,10 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
 
             # Person Tagging
             label = f'{names[cat]} | {id}'
-            t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
+            t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
-            cv2.rectangle(
-                img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
-            cv2.putText(img, label, (x1, y1 +
-                                     t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
+            cv2.rectangle(img, (x1, y1), (x1 + t_size[0], y1 - t_size[1] - 5), color, -1)
+            cv2.putText(img, label, (x1, y1 - t_size[1] + 8), cv2.FONT_HERSHEY_PLAIN, 1, [255, 255, 255], 1)
 
     return img, summary_sum
 
@@ -124,12 +123,12 @@ def run(
         line_thickness=3,  # bounding box thickness (pixels)
         dnn=False,  # use OpenCV DNN for ONNX inference
 
-        sort_max_age=5,
+        sort_max_age=30,
         sort_min_hits=2,
         sort_iou_thresh=0.2,
 
         sum_time=4.0,
-        filming_location = 'MainGate'
+        filming_location='MainGate'
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -171,6 +170,7 @@ def run(
 
     # Init define
     predict_congestion = 'None'
+    predict_person = 0
     summary_data = []
     summary_time = 0.0
     summary_frame = 0
@@ -241,18 +241,12 @@ def run(
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names,
-                                               congestion=predict_congestion, summary_sum=summary_data)
+                                               congestion=predict_congestion, person=predict_person,
+                                               summary_sum=summary_data)
                 summary_time += time_sync() - t1
                 summary_frame += 1
             else:
-                cv2.putText(im0, predict_congestion, (10, 50), cv2.FONT_ITALIC, 2, (255, 255, 255), cv2.LINE_8, 2)
-
-            # During time
-            if summary_time >= sum_time:
-                predict_congestion = calculate_congestion(summary_data, summary_frame, filming_location)
-                summary_data = []
-                summary_time = 0.0
-                summary_frame = 0
+                cv2.putText(im0, predict_congestion, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
@@ -308,6 +302,13 @@ def run(
             total_duration = time_sync() - t1
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
+        # During time
+        if summary_time >= sum_time:
+            predict_congestion, predict_person = calculate_congestion(summary_data, summary_frame, filming_location)
+            summary_data = []
+            summary_time = 0.0
+            summary_frame = 0
+
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -329,7 +330,7 @@ def parse_opt():
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.4, help='NMS IoU threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.2, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='show results')

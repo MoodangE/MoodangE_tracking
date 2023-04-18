@@ -36,10 +36,10 @@ def calculate_congestion(datas, frame, filming_location):
         level = 'Congestion'
 
     # Save predict result to firebase Realtime Database
-    data_path = 'dataList/Congestion' + str(filming_location)
+    data_path = 'dataList/Congestion/' + str(filming_location)
     ref = db.reference(data_path)
     ref.update({'level': level,
-                'person': count_standing
+                'person': count_standing,
                 })
 
-    return level
+    return level, count_standing
