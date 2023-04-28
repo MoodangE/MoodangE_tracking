@@ -57,7 +57,7 @@ def bbox_rel(*xyxy):
     return x_c, y_c, w, h
 
 
-def scene_boxes(bbox, categories=None, names=None, offset=(0, 0), summary_sum=None):
+def scene_boxes(bbox, categories=None, names=None, summary_sum=None):
     for i, box in enumerate(bbox):
         cat = int(categories[i]) if categories is not None else 0
         summary_sum += names[cat] + ' '

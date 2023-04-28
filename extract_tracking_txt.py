@@ -208,10 +208,9 @@ def parse_opt():
     parser = argparse.ArgumentParser()
 
     # YOLOv5 params
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5/yolov5s.pt', help='model path(s)')
-    parser.add_argument('--source', type=str, default=ROOT / 'yolov5/data/images',
-                        help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default=ROOT / 'yolov5/data/coco128.yaml',
+    parser.add_argument('--weights', nargs='+', type=str, default='best_1107.pt', help='model path(s)')
+    parser.add_argument('--source', type=str, default='yolov5/data/images', help='file/dir/URL/glob, 0 for webcam')
+    parser.add_argument('--data', type=str, default='yolov5/customDataset/gachon_road.yaml',
                         help='(optional) customDataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
                         help='inference size h,w')

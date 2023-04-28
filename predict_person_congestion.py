@@ -28,9 +28,9 @@ def calculate_congestion(datas, frame, filming_location):
 
     if count_standing < 14:
         level = 'Spare'
-    elif count_standing < 18:
+    elif count_standing < 17:
         level = 'General'
-    elif count_standing < 23:
+    elif count_standing < 22:
         level = 'Caution'
     else:
         level = 'Congestion'
