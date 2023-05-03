@@ -243,8 +243,6 @@ def run(
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names,
                                                congestion=predict_congestion, person=predict_person,
                                                summary_sum=summary_data)
-                summary_time += time_sync() - t1
-                summary_frame += 1
             else:
                 cv2.putText(im0, predict_congestion, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
@@ -303,8 +301,11 @@ def run(
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
         # During time
+        summary_time += time_sync() - t1
+        summary_frame += 1
         if summary_time >= sum_time:
             predict_congestion, predict_person = calculate_congestion(summary_data, summary_frame, filming_location)
+            print('Congestion Level: {},\t Waiting Person: {}'.format(predict_congestion, predict_person))
             summary_data = []
             summary_time = 0.0
             summary_frame = 0
