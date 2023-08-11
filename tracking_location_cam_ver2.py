@@ -1,11 +1,14 @@
 # python interpreter searches these subdirectories for modules
 import sys
 
+from sort.sort import Sort
+
 sys.path.insert(0, './yolov5')
 sys.path.insert(0, './sort')
 
 import argparse
 import os
+import platform
 import shutil
 import time
 from pathlib import Path
@@ -26,15 +29,12 @@ from yolov5.utils.plots import Annotator
 import skimage
 from sort import *
 
+# Predict
+from predict_location_Tfid_ver2 import location_predict_vector
+
 torch.set_printoptions(precision=3)
 
 palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
-
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0]  # MoodangE_tracking root directory
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))  # add ROOT to PATH
-ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 
 def bbox_rel(*xyxy):
@@ -58,8 +58,8 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def scene_boxes_data_txt(bbox, identities=None, categories=None, names=None, offset=(0, 0)):
-    label_data = ''
+def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None, summary_sum=None):
+    cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -70,19 +70,27 @@ def scene_boxes_data_txt(bbox, identities=None, categories=None, names=None, off
         cat = int(categories[i]) if categories is not None else 0
         id = int(identities[i]) if identities is not None else 0
 
-        label_data += str(id) + '-' + names[cat] + '\n'
+        color = compute_color_for_labels(id)
+        summary_sum += str(id) + '-' + names[cat] + '\n'
 
-    return label_data
+        label = f'{names[cat]} | {id}'
+        t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0]
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
+        cv2.rectangle(
+            img, (x1, y1), (x1 + t_size[0] + 3, y1 + t_size[1] + 4), color, -1)
+        cv2.putText(img, label, (x1, y1 +
+                                 t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
+    return img, summary_sum
 
 
-def extract_unique_labels(file_path):
+def find_unique_labels(summery_sum=None):
     unique_id_labels = set()
     unique_labels = []
+    return_summery = ""
 
-    with open(file_path, 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            unique_id_labels.add(line)
+    summery_data = summery_sum.split('\n')
+    for line in summery_data:
+        unique_id_labels.add(line)
 
     for datas in unique_id_labels:
         parts = datas.strip().split('-')
@@ -90,31 +98,32 @@ def extract_unique_labels(file_path):
             label = parts[1]
             unique_labels.append(label)
 
-    return unique_labels
+    for datas in unique_labels:
+        return_summery += datas + '\n'
 
-
-def write_unique_labels(file_path, unique_labels):
-    with open(file_path, 'w') as f:
-        for label in unique_labels:
-            f.write(f'{label}\n')
+    return return_summery
 
 
 @torch.no_grad()
 def run(
-        weights=ROOT / 'yolov5/yolov5s.pt',  # model.pt path(s)
-        source=ROOT / 'yolov5/data/images',  # file/dir/URL/glob, 0 for webcam
-        data=ROOT / 'yolov5/models/yolov5s.yaml',  # customDataset.yaml path
+        weights='yolov5/yolov5s.pt',  # model.pt path(s)
+        source='yolov5/data/images',  # file/dir/URL/glob, 0 for webcam
+        data='yolov5/models/yolov5s.yaml',  # customDataset.yaml path
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
         max_det=1000,  # maximum detections per image
         device='',  # cuda device, i.e. 0 or 0,1,2,3 or cpu
+        view_img=False,  # show results
+        save_txt=False,  # save results to *.txt
+        save_crop=False,  # save cropped prediction boxes
         nosave=False,  # do not save images/videos
         classes=None,  # filter by class: --class 0, or --class 0 2 3
         agnostic_nms=False,  # class-agnostic NMS
         augment=False,  # augmented inference
         visualize=False,  # visualize features
-        project=ROOT / 'inference_extract_sum_txt',  # save results to project/name
+        update=False,  # update all models
+        project='inference_cam',  # save results to project/name
         name='exp',  # save results to project/name
         exist_ok=False,  # existing project/name ok, do not increment
         line_thickness=3,  # bounding box thickness (pixels)
@@ -122,14 +131,19 @@ def run(
 
         sort_max_age=5,
         sort_min_hits=2,
-        sort_iou_thresh=0.2
+        sort_iou_thresh=0.2,
+
+        start_point='AI',
+        sum_time=5.0,
+        bus_id='moodang_1',
+        bus_power=True
 ):
     source = str(source)
+    save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
     is_url = source.lower().startswith(('rtsp://', 'rtmp://', 'http://', 'https://'))
 
-    webcam = source.isnumeric() or source.endswith(
-        '.txt') or (is_url and not is_file)
+    webcam = source.isnumeric() or source.endswith('.txt') or (is_url and not is_file)
     if is_url and is_file:
         source = check_file(source)  # download
 
@@ -140,41 +154,38 @@ def run(
 
     # Directory and CUDA settings for YOLOv5
     device = select_device(device)
-    save_dir = increment_path(Path(project) / name,
-                              exist_ok=exist_ok)  # increment run
+    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
     if os.path.exists(save_dir):
         shutil.rmtree(save_dir)  # delete output folder
     os.makedirs(save_dir)  # make new output folder
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load YOLOv5 model
-    model = DetectMultiBackend(
-        weights, device=device, dnn=dnn, data=data, fp16=half)
+    model = DetectMultiBackend(weights, device=device, dnn=dnn, data=data, fp16=half)
     stride, names, pt = model.stride, model.names, model.pt
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
     # Set Dataloader
     if webcam:
+        view_img = check_imshow()
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(source, img_size=imgsz, stride=stride, auto=pt)
         bs = len(dataset)  # batch_size
     else:
         dataset = LoadImages(source, img_size=imgsz, stride=stride, auto=pt)
         bs = 1  # batch_size
+    vid_path, vid_writer = [None] * bs, [None] * bs
 
-    # Set file path
-    file_path = None
+    # Init define
+    predict_location = start_point
+    predict_algorthm = None
+    summary_data = ''
+    summary_time = 0.0
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
     for frame_idx, (path, im, im0s, vid_cap, s) in enumerate(dataset):
-        split_s = s.split()
-        filename = split_s[-1]
-        filename = ((filename.split('/'))[-1]).split('.')
-        filename = filename[0].split('_')
-        filename_parts = filename[0]
-
         t1 = time_sync()
         im = torch.from_numpy(im).to(device)
         im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -189,6 +200,9 @@ def run(
         # Apply NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
 
+        # Second-stage classifier (optional)
+        # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
+
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -199,9 +213,12 @@ def run(
                 p, im0, frame = path, im0s.copy(), getattr(dataset, 'frame', 0)
 
             p = Path(p)  # to Path
-            txt_path = str(save_dir / filename_parts) + '.txt'  # im.txt
-            file_path = txt_path
+            save_path = str(save_dir / p.name)  # im.jpg
+            txt_path = str(save_dir / 'labels' / p.stem) + ('' if dataset.mode == 'image' else f'_{frame}')  # im.txt
             s += '%gx%g ' % im.shape[2:]  # print string
+            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
+            imc = im0.copy() if save_crop else im0  # for save_crop
+            annotator = Annotator(im0, line_width=line_thickness, example=str(names))
 
             # Rescale boxes from img_size (temporarily downscaled size) to im0 (native) size
             det[:, :4] = scale_coords(
@@ -217,21 +234,72 @@ def run(
             # NOTE: We send in detected object class too
             for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
                 dets_to_sort = np.vstack((dets_to_sort, np.array([x1, y1, x2, y2, conf, detclass])))
+            # print('\n')
+            # print('Input into SORT:\n', dets_to_sort, '\n')
 
             # Run SORT
             tracked_dets = sort_tracker.update(dets_to_sort)
 
-            # Save detect Data
-            if len(tracked_dets) != 0:
+            # print('Output from SORT:\n', tracked_dets, '\n')
+
+            # draw boxes for visualization
+            if len(tracked_dets) > 0:
                 bbox_xyxy = tracked_dets[:, :4]
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
-                label_datas = scene_boxes_data_txt(bbox=bbox_xyxy,
-                                                   identities=identities,
-                                                   categories=categories,
-                                                   names=names)
-                with open(txt_path, 'a') as f:
-                    f.write(f'{label_datas}')
+                im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location,
+                                               summary_sum=summary_data)
+                s += f'\t=> (predict_location: {predict_location}\tpredict_algorthm: {predict_algorthm})'
+            else:
+                cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+                cv2.putText(im0, predict_algorthm, (10, 150), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+
+            # Write detections to file. NOTE: Not MOT-compliant format.
+            if save_txt and len(tracked_dets) != 0:
+                for j, tracked_dets in enumerate(tracked_dets):
+                    bbox_x1 = tracked_dets[0]
+                    bbox_y1 = tracked_dets[1]
+                    bbox_x2 = tracked_dets[2]
+                    bbox_y2 = tracked_dets[3]
+                    category = tracked_dets[4]
+                    u_overdot = tracked_dets[5]
+                    v_overdot = tracked_dets[6]
+                    s_overdot = tracked_dets[7]
+                    identity = tracked_dets[8]
+
+                    with open(txt_path, 'a') as f:
+                        f.write(
+                            f'{frame_idx},{bbox_x1},{bbox_y1},{bbox_x2},{bbox_y2},{category},{u_overdot},{v_overdot},{s_overdot},{identity}\n')
+
+            # print(f'{s} Done. ({t2 - t1})')
+            # Stream results
+            im0 = annotator.result()
+            if view_img:
+                if platform.system() == 'Linux' and p not in windows:
+                    windows.append(p)
+                    cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
+                    cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
+                cv2.imshow(str(p), im0)
+                cv2.waitKey(1)  # 1 millisecond
+
+            # Save results (image with detections)
+            if save_img:
+                if dataset.mode == 'image':
+                    cv2.imwrite(save_path, im0)
+                else:  # 'video' or 'stream'
+                    if vid_path[i] != save_path:  # new video
+                        vid_path[i] = save_path
+                        if isinstance(vid_writer[i], cv2.VideoWriter):
+                            vid_writer[i].release()  # release previous video writer
+                        if vid_cap:  # video
+                            fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                            w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                            h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        else:  # stream
+                            fps, w, h = 30, im0.shape[1], im0.shape[0]
+                        save_path = str(Path(save_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                        vid_writer[i] = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                    vid_writer[i].write(im0)
 
             # Progress
             print(f'{s} Done.')
@@ -240,33 +308,48 @@ def run(
             total_duration = time_sync() - t1
             print('\tTime taken per frame: {:.4f}'.format(total_duration))
 
-    # Extract unique labels from the existing content of the txt file
-    unique_labels = extract_unique_labels(file_path)
-    print(unique_labels)
+        # During time
+        summary_time += time_sync() - t1
+        if summary_time >= sum_time:
+            summary_data = find_unique_labels(summary_data)
+            predict_location, predict_algorthm = location_predict_vector(summary_data, predict_location, bus_id, bus_power)
+            summary_data = ''
+            summary_time = 0.0
 
-    # Clear the existing content of the txt file and write the unique labels
-    write_unique_labels(file_path, unique_labels)
+    # Print results
+    t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
+    LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
+    if save_txt or save_img:
+        s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
+        LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
+    if update:
+        strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
+
 
 def parse_opt():
     parser = argparse.ArgumentParser()
 
     # YOLOv5 params
-    parser.add_argument('--weights', nargs='+', type=str, default='best_1107.pt', help='model path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='best.pt', help='model path(s)')
     parser.add_argument('--source', type=str, default='yolov5/data/images', help='file/dir/URL/glob, 0 for webcam')
     parser.add_argument('--data', type=str, default='yolov5/customDataset/gachon_road.yaml',
                         help='(optional) customDataset.yaml path')
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640],
+                        help='inference size h,w')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.4, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--view-img', action='store_true', help='show results')
+    parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
+    parser.add_argument('--save-crop', action='store_true', help='save cropped prediction boxes')
     parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --classes 0, or --classes 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--visualize', action='store_true', help='visualize features')
-    parser.add_argument('--project', default=ROOT /
-                                             'inference_extract_sum_txt', help='save results to project/name')
+    parser.add_argument('--update', action='store_true', help='update all models')
+    parser.add_argument('--project', default='inference_cam', help='save results to project/name')
     parser.add_argument('--name', default='exp', help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--line-thickness', default=3, type=int, help='bounding box thickness (pixels)')
@@ -279,6 +362,17 @@ def parse_opt():
                         help='start tracking only after n number of objects detected')
     parser.add_argument('--sort-iou-thresh', type=float, default=0.1,
                         help='intersection-over-union threshold between two frames for association')
+
+    # Detecting descript
+    parser.add_argument('--start-point', type=str, default='AI', help='start point\'s category : [MainGate, Tunnel, '
+                                                                      'Education, EduMainLib, Student, AI, MainLib, '
+                                                                      'Rotary, Art]')
+    parser.add_argument('--sum-time', type=float, default=5.0, help='Designated as 4 seconds based on the image of '
+                                                                    'FPS 30.')
+    parser.add_argument('--bus-id', type=str, default='moodang_1', help='Check bus number(moodang_1) or device mac '
+                                                                        'number')
+    parser.add_argument('--bus-power', type=bool, default=True, help='Indicates whether the bus is starting or not '
+                                                                     'in boolean form')
 
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
