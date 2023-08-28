@@ -80,4 +80,4 @@ def location_predict_vector(datas, previous_location, bus_id, bus_power):
                     'power': bus_power,
                     })
 
-    return result
+    return result, predict

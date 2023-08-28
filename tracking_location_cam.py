@@ -58,8 +58,15 @@ def compute_color_for_labels(label):
     return tuple(color)
 
 
-def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None, summary_sum=None):
+def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), location=None, summary_sum=None,predict_algorthm=None,predict_percent=None):
     cv2.putText(img, location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+
+    if predict_algorthm is not None:
+        cv2.putText(img, str(predict_algorthm[0] + ': ' + str(round(predict_percent[0], 2))), (10, 150),
+                    cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+        cv2.putText(img, str(predict_algorthm[1] + ': ' + str(round(predict_percent[1], 2))), (10, 250),
+                    cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+
     for i, box in enumerate(bbox):
         x1, y1, x2, y2 = [int(i) for i in box]
         x1 += offset[0]
@@ -157,6 +164,8 @@ def run(
 
     # Init define
     predict_location = start_point
+    predict_algorthm = None
+    predict_percent = None
     summary_data = ''
     summary_time = 0.0
 
@@ -226,10 +235,16 @@ def run(
                 identities = tracked_dets[:, 8]
                 categories = tracked_dets[:, 4]
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names, location=predict_location,
-                                               summary_sum=summary_data)
+                                               summary_sum=summary_data, predict_algorthm=predict_algorthm,
+                                               predict_percent=predict_percent)
                 s += f'\t=> ({predict_location})'
             else:
                 cv2.putText(im0, predict_location, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+                if predict_algorthm is not None:
+                    cv2.putText(im0, str(predict_algorthm[0] + ': ' + str(round(predict_percent[0], 2))), (10, 150),
+                                cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
+                    cv2.putText(im0, str(predict_algorthm[1] + ': ' + str(round(predict_percent[1], 2))), (10, 250),
+                                cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
             # Write detections to file. NOTE: Not MOT-compliant format.
             if save_txt and len(tracked_dets) != 0:
@@ -288,9 +303,15 @@ def run(
         # During time
         summary_time += time_sync() - t1
         if summary_time >= sum_time:
-            predict_location = location_predict_vector(summary_data, predict_location, bus_id, bus_power)
+            predict_location, predict_algorthm = location_predict_vector(summary_data, predict_location, bus_id,
+                                                                         bus_power)
+            predict_percent = sum(predict_algorthm.values.tolist(), [])
+            predict_algorthm = predict_algorthm.index.tolist()
             summary_data = ''
             summary_time = 0.0
+            with open(str(save_dir / 'detect.txt'), 'a') as f:
+                f.write(
+                    f'{predict_algorthm[0]} {round(predict_percent[0], 2)} {predict_algorthm[1]} {round(predict_percent[1], 2)}\n')
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image

@@ -1,0 +1,14 @@
+straightLeft
+bump
+bump
+bumpSign
+bump
+crossSign
+crosswalk
+bumpSign
+slowSign
+20kmSign
+moodangSign
+diamond
+lifelongPlanCard
+yield
