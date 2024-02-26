@@ -16,6 +16,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
+from collections import defaultdict
 
 # yolov5
 from yolov5.models.common import DetectMultiBackend
@@ -59,7 +60,7 @@ def compute_color_for_labels(label):
 
 
 def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0), congestion=None,
-               person=None, summary_sum=None):
+               person=None, summary_sum=None, tracking_line=None, person_id_list=None):
     input_text = congestion + " " + str(person)
     cv2.putText(img, input_text, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
@@ -69,6 +70,9 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
         x2 += offset[0]
         y1 += offset[1]
         y2 += offset[1]
+
+        foot_tracking_x = int((x1 + x2) / 2.0)
+        foot_tracking_y = y2
 
         # box text and bar
         cat = int(categories[i]) if categories is not None else 0
@@ -94,6 +98,20 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
             cv2.rectangle(img, (x1, y1), (x1 + t_size[0], y1 - t_size[1] - 5), color, -1)
             cv2.putText(img, label, (x1, y1 - t_size[1] + 8), cv2.FONT_HERSHEY_PLAIN, 1, [255, 255, 255], 1)
+            cv2.circle(img, (foot_tracking_x, foot_tracking_y), 2, color, -1)
+            tracking_line[id].append((foot_tracking_x, foot_tracking_y))
+            if id not in person_id_list:
+                person_id_list.append(id)
+                start_pt = (foot_tracking_x, foot_tracking_y)
+                end_pt = (foot_tracking_x, foot_tracking_y)
+                cv2.line(img, start_pt, end_pt, color, 3)
+            else:
+                line = len(tracking_line[id])
+                for pt in range(len(tracking_line[id])):
+                    if not pt + 1 == line:
+                        start_pt = (tracking_line[id][pt][0], tracking_line[id][pt][1])
+                        end_pt = (tracking_line[id][pt + 1][0], tracking_line[id][pt + 1][1])
+                        cv2.line(img, start_pt, end_pt, color, 3)
 
     return img, summary_sum
 
@@ -174,6 +192,8 @@ def run(
     summary_data = []
     summary_time = 0.0
     summary_frame = 0
+    tracking_line = defaultdict(list)
+    person_id_list = []
 
     # Run inference
     model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))  # warmup
@@ -242,7 +262,8 @@ def run(
                 categories = tracked_dets[:, 4]
                 im0, summary_data = draw_boxes(im0, bbox_xyxy, identities, categories, names,
                                                congestion=predict_congestion, person=predict_person,
-                                               summary_sum=summary_data)
+                                               summary_sum=summary_data, tracking_line=tracking_line,
+                                               person_id_list=person_id_list)
             else:
                 cv2.putText(im0, predict_congestion, (10, 50), cv2.FONT_ITALIC, 2, (217, 65, 70), cv2.LINE_8, 2)
 
